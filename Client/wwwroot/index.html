@@ -1,0 +1,419 @@
+﻿<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relocation App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: center;
+        }
+
+        form {
+            max-width: 300px;
+            margin: auto;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Personal Area Styles */
+        #personalArea {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            text-align: left;
+        }
+
+            #personalArea h2 {
+                margin-bottom: 20px;
+                font-size: 24px;
+                color: #333;
+            }
+
+        #relocationDetailsDisplay, #userCategories {
+            margin-bottom: 20px;
+        }
+
+            #relocationDetailsDisplay p, #userCategories div {
+                margin: 10px 0;
+                padding: 10px;
+                background-color: #fff;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+
+        /* Categories page styles */
+        #categoriesPage .categories-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        #categoriesPage .category-item {
+            flex: 1 1 calc(33.333% - 10px);
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+
+            #categoriesPage .category-item input {
+                display: none;
+            }
+
+            #categoriesPage .category-item label {
+                display: block;
+                cursor: pointer;
+            }
+
+            #categoriesPage .category-item.selected {
+                background-color: #ddd;
+            }
+    </style>
+</head>
+<body>
+
+    <h1>Relocation App</h1>
+
+    <!-- Login page -->
+    <section id="login">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <label for="loginUsername">Username:</label>
+            <input type="text" id="loginUsername" required><br>
+            <label for="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" required><br>
+            <button type="submit">Login</button>
+        </form>
+        <button id="registerButton">Register</button>
+        <p id="loginResult"></p>
+    </section>
+
+    <!-- Registration page -->
+    <section id="registration" class="hidden">
+        <h2>Register</h2>
+        <form id="registerForm">
+            <label for="fullName">Full Name:</label>
+            <input type="text" id="fullName" required><br>
+            <label for="username">Username:</label>
+            <input type="text" id="username" required><br>
+            <label for="email">Email:</label>
+            <input type="email" id="email" required><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" required><br>
+            <button type="submit">Register</button>
+        </form>
+        <p id="registrationResult"></p>
+    </section>
+
+    <!-- Relocation details page -->
+    <section id="relocationDetails" class="hidden">
+        <h2>Relocation Details</h2>
+        <form id="relocationForm">
+            <label for="destinationCountry">Destination Country:</label>
+            <select id="destinationCountry" required>
+                <option value="ארצות הברית">ארצות הברית</option>
+                <option value="קנדה">קנדה</option>
+                <option value="גרמניה">גרמניה</option>
+                <option value="צרפת">צרפת</option>
+                <option value="איטליה">איטליה</option>
+                <option value="ספרד">ספרד</option>
+                <option value="אוסטרליה">אוסטרליה</option>
+                <option value="ברזיל">ברזיל</option>
+                <option value="יפן">יפן</option>
+                <option value="הודו">הודו</option>
+            </select><br>
+            <label for="moveDate">Move Date:</label>
+            <input type="date" id="moveDate" required><br>
+            <label for="hasChildren">Has Children:</label>
+            <input type="checkbox" id="hasChildren"><br>
+            <button type="button" id="nextToCategories">Next</button>
+        </form>
+    </section>
+
+    <!-- Categories Page -->
+
+    <section id="categoriesPage" class="hidden">
+        <h2>Select Categories</h2>
+        <form id="categoriesForm">
+            <div class="categories-list" id="categoriesList">
+                <!-- Category items -->
+                <div class="category-item">
+                    <input type="checkbox" id="category-1" value="1">
+                    <label for="category-1">בעלי חיים</label>
+                </div>
+                <div class="category-item">
+                    <input type="checkbox" id="category-2" value="2">
+                    <label for="category-2">טיסה</label>
+                </div>
+                <div class="category-item">
+                    <input type="checkbox" id="category-3" value="3">
+                    <label for="category-3">עבודה</label>
+                </div>
+                <div class="category-item">
+                    <input type="checkbox" id="category-4" value="4">
+                    <label for="category-4">בריאות</label>
+                </div>
+                <div class="category-item">
+                    <input type="checkbox" id="category-5" value="5">
+                    <label for="category-5">מגורים</label>
+                </div>
+                <div class="category-item">
+                    <input type="checkbox" id="category-6" value="6">
+                    <label for="category-6">פנאי</label>
+                </div>
+                <div class="category-item">
+                    <input type="checkbox" id="category-7" value="7">
+                    <label for="category-7">חינוך ילדים</label>
+                </div>
+                <div class="category-item">
+                    <input type="checkbox" id="category-8" value="8">
+                    <label for="category-8">הובלה</label>
+                </div>
+                <div class="category-item">
+                    <input type="checkbox" id="category-9" value="9">
+                    <label for="category-9">חינוך בוגרים</label>
+                </div>
+                <div class="category-item">
+                    <input type="checkbox" id="category-10" value="10">
+                    <label for="category-10">ביטוחים</label>
+                </div>
+                <div class="category-item">
+                    <input type="checkbox" id="category-11" value="11">
+                    <label for="category-11">רכב</label>
+                </div>
+                <div class="category-item">
+                    <input type="checkbox" id="category-12" value="12">
+                    <label for="category-12">קהילות</label>
+                </div>
+            </div>
+            <button type="submit" id="SaveCategories">הבא</button>
+        </form>
+        <p id="relocationResult"></p>
+    </section>
+
+    <!-- Personal area -->
+    <section id="personalArea" class="hidden">
+        <h2>Personal Area</h2>
+        <div id="relocationDetailsDisplay"></div>
+        <div id="userCategories"></div>
+    </section>
+
+
+
+
+
+    <script>
+        let userId;
+
+          
+        //עמוד ההרשמה 
+
+        document.getElementById('registerButton').addEventListener('click', function () {
+            document.getElementById('login').classList.add('hidden');
+            document.getElementById('registration').classList.remove('hidden');
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const fullName = document.getElementById('fullName').value;
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://localhost:5231/api/register/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fullName, username, email, passwordHash: password })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    userId = result.user.userId;  // Save userId for later use
+                    document.getElementById('registrationResult').innerText = 'Registration successful!';
+                    document.getElementById('registration').classList.add('hidden');
+                    document.getElementById('relocationDetails').classList.remove('hidden');
+                } else {
+                    document.getElementById('registrationResult').innerText = `Registration failed: ${result.message}`;
+                }
+            } catch (error) {
+                document.getElementById('registrationResult').innerText = `Registration failed: ${error.message}`;
+            }
+        });
+
+
+
+
+        //עמודה הכניסה
+        document.getElementById('loginForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('http://localhost:5231/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    userId = result.userId;  // Save userId for later use
+                    document.getElementById('loginResult').innerText = 'Login successful!';
+                    loadUserDetails();
+                } else {
+                    document.getElementById('loginResult').innerText = `Login failed: ${result.message}`;
+                }
+            } catch (error) {
+                document.getElementById('loginResult').innerText = `Login failed: ${error.message}`;
+            }
+        });
+
+
+
+
+
+       //טיפול בפרטי הרילוקישיין עבור כל משתמש  'POST'
+        document.getElementById('nextToCategories').addEventListener('click', async function () {
+            const destinationCountry = document.getElementById('destinationCountry').value;
+            const moveDate = document.getElementById('moveDate').value;
+            const hasChildren = document.getElementById('hasChildren').checked;
+
+            try {
+                const response = await fetch('http://localhost:5231/api/details', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId, destinationCountry, moveDate, hasChildren, selectedCategories: [] }) // Empty array for now
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    document.getElementById('relocationDetails').classList.add('hidden');
+                    document.getElementById('categoriesPage').classList.remove('hidden');
+                } else {
+                    console.error(`Submission failed: ${result.message}`);
+                }
+            } catch (error) {
+                console.error(`Submission failed: ${error.message}`);
+            }
+        });
+
+
+
+        //עמוד הקטגוריות
+
+
+        document.querySelectorAll('.category-item').forEach(item => {
+            item.addEventListener('click', function () {
+                this.classList.toggle('selected');
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+            });
+        });
+
+        document.getElementById('categoriesForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const selectedCategories = [];
+            document.querySelectorAll('#categoriesList input[type="checkbox"]:checked').forEach((checkbox) => {
+                selectedCategories.push(parseInt(checkbox.value));
+            });
+
+            try {
+                const response = await fetch('http://localhost:5231/api/UserCategories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId, selectedCategories })
+                });
+
+                let result;
+                if (response.headers.get('content-type')?.includes('application/json')) {
+                    result = await response.json();
+                } else {
+                    const text = await response.text();
+                    throw new Error(text);
+                }
+
+                if (response.ok) {
+                    document.getElementById('relocationResult').innerText = result.message;
+                    document.getElementById('categoriesPage').classList.add('hidden');
+                    document.getElementById('personalArea').classList.remove('hidden');
+                    loadUserDetails(); // Load user details including selected categories
+                } else {
+                    document.getElementById('relocationResult').innerText = `Saving categories failed: ${result.message}`;
+                }
+            } catch (error) {
+                document.getElementById('relocationResult').innerText = `Saving categories failed: ${error.message}`;
+            }
+        });
+
+
+
+
+           //מביא את כל תשובות המשתמש על השאלות והקטגוריות
+           // מה שמוצג בעת כניסה לאזור האישי
+        async function loadUserDetails() {
+            try {
+                const response = await fetch(`http://localhost:5231/api/userdetails/${userId}`);
+                const details = await response.json();
+
+                const relocationDetailsDiv = document.getElementById('relocationDetailsDisplay');
+                relocationDetailsDiv.innerHTML = `
+                            <p>Destination Country: ${details.relocationDetails.destinationCountry}</p>
+                            <p>Move Date: ${details.relocationDetails.moveDate}</p>
+                            <p>Has Children: ${details.relocationDetails.hasChildren}</p>
+                        `;
+
+                const userCategoriesDiv = document.getElementById('userCategories');
+                userCategoriesDiv.innerHTML = '<p>Categories</p>';
+                details.categories.forEach(category => {
+                    const div = document.createElement('div');
+                    div.textContent = category.categoryName;
+                    userCategoriesDiv.appendChild(div);
+                });
+
+                document.getElementById('personalArea').classList.remove('hidden');
+                document.getElementById('login').classList.add('hidden');
+            } catch (error) {
+                console.error('Error loading user details:', error);
+            }
+        }
+    </script>
+</body>
+</html>
