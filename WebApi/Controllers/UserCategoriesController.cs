@@ -52,5 +52,28 @@ namespace WebApi.Controllers
 
             return Ok(categories);
         }
+
+        [HttpGet("tasks/user/{userId}/{isBeforeMove}")]
+        public async Task<ActionResult<IEnumerable<RelocationTask>>> GetTasksByUserAndMoveStatus(int userId, bool isBeforeMove)
+        {
+            // מציאת הקטגוריות שהמשתמש בחר
+            var userCategories = await db.UserCategories
+                .Where(uc => uc.UserId == userId)
+                .Select(uc => uc.CategoryId)
+                .ToListAsync();
+
+            // מציאת המשימות לפי הקטגוריות והמצב מעבר
+            var tasks = await db.RelocationTasks
+                .Where(rt => userCategories.Contains(rt.CategoryId) && rt.IsBeforeMove == isBeforeMove)
+                .ToListAsync();
+
+            if (tasks == null || !tasks.Any())
+            {
+                return NotFound("No tasks found for the user's categories and move status.");
+            }
+
+            return Ok(tasks);
+        }
+
     }
 }

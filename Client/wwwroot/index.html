@@ -224,6 +224,20 @@
         <h2>Personal Area</h2>
         <div id="relocationDetailsDisplay"></div>
         <div id="userCategories"></div>
+
+        <!-- Tasks section -->
+        <div id="userTasks">
+            <h3>User Tasks</h3>
+            <div>
+                <h4>לפני</h4>
+                <div id="tasksListBeforeMove"></div>
+            </div>
+            <div>
+                <h4>אחרי</h4>
+                <div id="tasksListAfterMove"></div>
+            </div>
+        </div>
+
     </section>
 
 
@@ -233,8 +247,8 @@
     <script>
         let userId;
 
-          
-        //עמוד ההרשמה 
+
+        //עמוד ההרשמה
 
         document.getElementById('registerButton').addEventListener('click', function () {
             document.getElementById('login').classList.add('hidden');
@@ -306,7 +320,7 @@
 
 
 
-       //טיפול בפרטי הרילוקישיין עבור כל משתמש  'POST'
+        //טיפול בפרטי הרילוקישיין עבור כל משתמש  'POST'
         document.getElementById('nextToCategories').addEventListener('click', async function () {
             const destinationCountry = document.getElementById('destinationCountry').value;
             const moveDate = document.getElementById('moveDate').value;
@@ -386,19 +400,20 @@
 
 
 
-           //מביא את כל תשובות המשתמש על השאלות והקטגוריות
-           // מה שמוצג בעת כניסה לאזור האישי
+        //מביא את כל תשובות המשתמש על השאלות והקטגוריות
+        // מה שמוצג בעת כניסה לאזור האישי
         async function loadUserDetails() {
             try {
                 const response = await fetch(`http://localhost:5231/api/userdetails/${userId}`);
                 const details = await response.json();
+                console.log('User details loaded:', details); // Log the details for debugging
 
                 const relocationDetailsDiv = document.getElementById('relocationDetailsDisplay');
                 relocationDetailsDiv.innerHTML = `
-                            <p>Destination Country: ${details.relocationDetails.destinationCountry}</p>
-                            <p>Move Date: ${details.relocationDetails.moveDate}</p>
-                            <p>Has Children: ${details.relocationDetails.hasChildren}</p>
-                        `;
+                <p>Destination Country: ${details.relocationDetails.destinationCountry}</p>
+                <p>Move Date: ${details.relocationDetails.moveDate}</p>
+                <p>Has Children: ${details.relocationDetails.hasChildren}</p>
+            `;
 
                 const userCategoriesDiv = document.getElementById('userCategories');
                 userCategoriesDiv.innerHTML = '<p>Categories</p>';
@@ -408,12 +423,47 @@
                     userCategoriesDiv.appendChild(div);
                 });
 
+                // Load and display tasks
+                await loadUserTasks(userId, true, 'tasksListAfterMove');  // Tasks After Move
+                await loadUserTasks(userId, false, 'tasksListBeforeMove'); // Tasks Before Move
+
                 document.getElementById('personalArea').classList.remove('hidden');
                 document.getElementById('login').classList.add('hidden');
             } catch (error) {
                 console.error('Error loading user details:', error);
             }
         }
+
+        async function loadUserTasks(userId, isBeforeMove, elementId) {
+            try {
+                console.log(`Fetching tasks for user ${userId} and isBeforeMove ${isBeforeMove}`);
+                const response = await fetch(`http://localhost:5231/api/UserCategories/tasks/user/${userId}/${isBeforeMove}`);
+
+                if (!response.ok) {
+                    throw new Error(`Error fetching tasks: ${response.statusText}`);
+                }
+
+                const tasks = await response.json();
+                console.log('User tasks loaded:', tasks); // Log the tasks for debugging
+
+                const userTasksDiv = document.getElementById(elementId);
+                userTasksDiv.innerHTML = ''; // Clear previous tasks
+                if (tasks.length > 0) {
+                    tasks.forEach(task => {
+                        const taskDiv = document.createElement('div');
+                        taskDiv.textContent = task.recommendedTask; // Use the correct property for the task name
+                        userTasksDiv.appendChild(taskDiv);
+                    });
+                } else {
+                    userTasksDiv.innerHTML = '<p>No tasks found for the user\'s categories and move status.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading user tasks:', error);
+            }
+        }
+
+
+
     </script>
 </body>
 </html>

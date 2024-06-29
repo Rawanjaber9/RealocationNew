@@ -9,7 +9,7 @@ public partial class Category
 
     public string CategoryName { get; set; } = null!;
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime? CreatedAt { get; set; }
 
     public virtual ICollection<UserCategory> UserCategories { get; set; } = new List<UserCategory>();
 }

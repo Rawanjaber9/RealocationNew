@@ -14,6 +14,4 @@ public partial class UserCategory
     public DateTime CreatedAt { get; set; }
 
     public virtual Category Category { get; set; } = null!;
-
-    public virtual User User { get; set; } = null!;
 }

@@ -1,13 +1,13 @@
 {
   "Version": 1,
-  "Hash": "ngdODoapV41gAkoJ3x/MSq2JA9ClX/Myu5MMWwSH2aY=",
+  "Hash": "yJHjQia0LzSLeo2i5Ur6XvhvpqjDOnB08FKobSTZ0A8=",
   "Source": "Client",
   "BasePath": "_content/Client",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [
     {
-      "Identity": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\server\\WebApi\\WebApi.csproj",
+      "Identity": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\RealocationNew\\WebApi\\WebApi.csproj",
       "Version": 2,
       "Source": "WebApi",
       "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
@@ -22,17 +22,17 @@
     {
       "Name": "Client\\wwwroot",
       "Source": "Client",
-      "ContentRoot": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\server\\Client\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\RealocationNew\\Client\\wwwroot\\",
       "BasePath": "_content/Client",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\server\\Client\\wwwroot\\index.html",
+      "Identity": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\RealocationNew\\Client\\wwwroot\\index.html",
       "SourceId": "Client",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\server\\Client\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\RealocationNew\\Client\\wwwroot\\",
       "BasePath": "_content/Client",
       "RelativePath": "index.html",
       "AssetKind": "All",

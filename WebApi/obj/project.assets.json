@@ -3055,11 +3055,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\server\\WebApi\\WebApi.csproj",
+      "projectUniqueName": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\RealocationNew\\WebApi\\WebApi.csproj",
       "projectName": "WebApi",
-      "projectPath": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\server\\WebApi\\WebApi.csproj",
+      "projectPath": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\RealocationNew\\WebApi\\WebApi.csproj",
       "packagesPath": "C:\\Users\\HP\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\server\\WebApi\\obj\\",
+      "outputPath": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\RealocationNew\\WebApi\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\HP\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -3076,8 +3076,8 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
-            "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\server\\Data\\Data.csproj": {
-              "projectPath": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\server\\Data\\Data.csproj"
+            "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\RealocationNew\\Data\\Data.csproj": {
+              "projectPath": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\RealocationNew\\Data\\Data.csproj"
             }
           }
         }

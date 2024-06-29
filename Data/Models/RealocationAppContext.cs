@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace Data.Models;
 
@@ -22,6 +21,8 @@ public partial class RealocationAppContext : DbContext
 
     public virtual DbSet<RelocationDetail> RelocationDetails { get; set; }
 
+    public virtual DbSet<RelocationTask> RelocationTasks { get; set; }
+
     public virtual DbSet<Task> Tasks { get; set; }
 
     public virtual DbSet<TaskComment> TaskComments { get; set; }
@@ -30,22 +31,17 @@ public partial class RealocationAppContext : DbContext
 
     public virtual DbSet<UserCategory> UserCategories { get; set; }
 
-    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-    //        => optionsBuilder.UseSqlServer("Server=DESKTOP-N2Q4FF9\\SQLEXPRESS;Database=RealocationApp;Trusted_Connection=True;Encrypt=false");
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", false).Build();
-        String connStr = config.GetConnectionString("DefaultConnectionString");
-        optionsBuilder.UseSqlServer(connStr);
-    }
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=DESKTOP-N2Q4FF9\\SQLEXPRESS;Database=RealocationApp;Trusted_Connection=True;Encrypt=false");
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
         {
-            entity.HasKey(e => e.CategoryId).HasName("PK__Categori__19093A0B2BFB19A2");
+            entity.HasKey(e => e.CategoryId).HasName("PK__Categori__19093A0B4A3F17C3");
 
-            entity.Property(e => e.CategoryName).HasMaxLength(100);
+            entity.Property(e => e.CategoryName).HasMaxLength(255);
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -67,6 +63,13 @@ public partial class RealocationAppContext : DbContext
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.DestinationCountry).HasMaxLength(100);
             entity.Property(e => e.MoveDate).HasColumnType("date");
+        });
+
+        modelBuilder.Entity<RelocationTask>(entity =>
+        {
+            entity.HasKey(e => e.TaskId).HasName("PK__Relocati__7C6949B15D627C80");
+
+            entity.Property(e => e.RecommendedTask).HasMaxLength(255);
         });
 
         modelBuilder.Entity<Task>(entity =>
@@ -113,6 +116,8 @@ public partial class RealocationAppContext : DbContext
         {
             entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4C5168692E");
 
+            entity.HasIndex(e => e.Username, "UQ__Users__536C85E4133AEE4A").IsUnique();
+
             entity.HasIndex(e => e.Username, "UQ__Users__536C85E434E6C1D7").IsUnique();
 
             entity.Property(e => e.CreatedAt)
@@ -126,7 +131,7 @@ public partial class RealocationAppContext : DbContext
 
         modelBuilder.Entity<UserCategory>(entity =>
         {
-            entity.HasKey(e => e.UserCategoryId).HasName("PK__UserCate__2421C384F6C30681");
+            entity.HasKey(e => e.UserCategoryId).HasName("PK__UserCate__2421C3843B9A508E");
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -135,12 +140,7 @@ public partial class RealocationAppContext : DbContext
             entity.HasOne(d => d.Category).WithMany(p => p.UserCategories)
                 .HasForeignKey(d => d.CategoryId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserCateg__Categ__30F848ED");
-
-            entity.HasOne(d => d.User).WithMany(p => p.UserCategories)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserCateg__UserI__300424B4");
+                .HasConstraintName("FK__UserCateg__Categ__7C4F7684");
         });
 
         OnModelCreatingPartial(modelBuilder);

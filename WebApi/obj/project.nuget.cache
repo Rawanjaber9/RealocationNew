@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Ud8zYZCgAaLWB0pc8A13y7YNkK3U6P9GkN3VPhk8iBZX6OjINytD0GwMm+WIXvLeEu0WeTzKsS2JERrNq5BYgg==",
+  "dgSpecHash": "D81cRXRbWacbiwQ1H7ignLQ3Cc2Re3rdKKRmFEF8ZVL2keYQMKGkKTqC5cRSv1qXb9SuWM31bAZfDZ5yZyVFkg==",
   "success": true,
-  "projectFilePath": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\server\\WebApi\\WebApi.csproj",
+  "projectFilePath": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\RealocationNew\\WebApi\\WebApi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\HP\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\HP\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",

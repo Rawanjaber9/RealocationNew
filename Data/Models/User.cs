@@ -20,6 +20,4 @@ public partial class User
     public virtual ICollection<TaskComment> TaskComments { get; set; } = new List<TaskComment>();
 
     public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
-
-    public virtual ICollection<UserCategory> UserCategories { get; set; } = new List<UserCategory>();
 }
