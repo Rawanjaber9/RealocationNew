@@ -34,7 +34,11 @@ namespace WebApi.Controllers
 
             await db.SaveChangesAsync();
 
-            return Ok(new { message = "Categories submitted!" });
+            return Ok(new
+            {
+                UserId = userCategoriesDto.UserId,
+                SelectedCategories = userCategoriesDto.SelectedCategories
+            });
         }
 
         [HttpGet("{userId}")]
