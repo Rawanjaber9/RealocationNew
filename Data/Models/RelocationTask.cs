@@ -12,4 +12,8 @@ public partial class RelocationTask
     public string RecommendedTask { get; set; } = null!;
 
     public bool IsBeforeMove { get; set; }
+
+    public string? DescriptionTask { get; set; }
+
+    public virtual ICollection<UserTask> UserTasks { get; set; } = new List<UserTask>();
 }

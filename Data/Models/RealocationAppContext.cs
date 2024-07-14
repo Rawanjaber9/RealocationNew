@@ -31,6 +31,8 @@ public partial class RealocationAppContext : DbContext
 
     public virtual DbSet<UserCategory> UserCategories { get; set; }
 
+    public virtual DbSet<UserTask> UserTasks { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=DESKTOP-N2Q4FF9\\SQLEXPRESS;Database=RealocationApp;Trusted_Connection=True;Encrypt=false");
@@ -141,6 +143,25 @@ public partial class RealocationAppContext : DbContext
                 .HasForeignKey(d => d.CategoryId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserCateg__Categ__7C4F7684");
+        });
+
+        modelBuilder.Entity<UserTask>(entity =>
+        {
+            entity.HasKey(e => e.UserTaskId).HasName("PK__UserTask__4EF5961FB6B0865E");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.TaskName).HasMaxLength(255);
+
+            entity.HasOne(d => d.Task).WithMany(p => p.UserTasks)
+                .HasForeignKey(d => d.TaskId)
+                .HasConstraintName("FK__UserTasks__TaskI__06CD04F7");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserTasks)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserTasks__UserI__05D8E0BE");
         });
 
         OnModelCreatingPartial(modelBuilder);

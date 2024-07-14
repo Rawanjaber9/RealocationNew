@@ -1,6 +1,7 @@
 ﻿using Data.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using WebApi.DTO;
@@ -34,6 +35,31 @@ namespace WebApi.Controllers
 
             await db.SaveChangesAsync();
 
+            // הוספת המשימות המומלצות למשתמש לטבלת UserTasks
+            foreach (var categoryId in userCategoriesDto.SelectedCategories)
+            {
+                var recommendedTasks = await db.RelocationTasks
+                    .Where(rt => rt.CategoryId == categoryId)
+                    .ToListAsync();
+
+                foreach (var task in recommendedTasks)
+                {
+                    var userTask = new UserTask
+                    {
+                        UserId = userCategoriesDto.UserId,
+                        TaskId = task.TaskId,
+                        TaskName = task.RecommendedTask,
+                        TaskDescription = task.DescriptionTask,
+                        IsRecommended = true,
+                        IsDeleted = false,
+                        CreatedAt = DateTime.Now
+                    };
+                    db.UserTasks.Add(userTask);
+                }
+            }
+
+            await db.SaveChangesAsync();
+
             return Ok(new
             {
                 UserId = userCategoriesDto.UserId,
@@ -58,7 +84,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("tasks/user/{userId}/{isBeforeMove}")]
-        public async Task<ActionResult<IEnumerable<RelocationTask>>> GetTasksByUserAndMoveStatus(int userId, bool isBeforeMove)
+        public async Task<ActionResult<IEnumerable<object>>> GetTasksByUserAndMoveStatus(int userId, bool isBeforeMove)
         {
             // מציאת הקטגוריות שהמשתמש בחר
             var userCategories = await db.UserCategories
@@ -69,6 +95,13 @@ namespace WebApi.Controllers
             // מציאת המשימות לפי הקטגוריות והמצב מעבר
             var tasks = await db.RelocationTasks
                 .Where(rt => userCategories.Contains(rt.CategoryId) && rt.IsBeforeMove == isBeforeMove)
+                .Select(rt => new
+                {
+                    rt.CategoryId,
+                    rt.TaskId,
+                    rt.RecommendedTask,
+                    rt.DescriptionTask
+                })
                 .ToListAsync();
 
             if (tasks == null || !tasks.Any())
@@ -78,6 +111,5 @@ namespace WebApi.Controllers
 
             return Ok(tasks);
         }
-
     }
 }
