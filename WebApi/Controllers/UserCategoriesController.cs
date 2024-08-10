@@ -22,6 +22,10 @@ namespace WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
+
+            var newTasks = new List<object>();
+
+
             foreach (var categoryId in userCategoriesDto.SelectedCategories)
             {
                 var userCategory = new UserCategory
@@ -52,9 +56,13 @@ namespace WebApi.Controllers
                         TaskDescription = task.DescriptionTask,
                         IsRecommended = true,
                         IsDeleted = false,
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.Now,
+                        Priority = task.PriorityId,
+                        PersonalNote = ""
                     };
                     db.UserTasks.Add(userTask);
+                    newTasks.Add(new { userTask.TaskId, userTask.TaskName });
+
                 }
             }
 
@@ -63,9 +71,13 @@ namespace WebApi.Controllers
             return Ok(new
             {
                 UserId = userCategoriesDto.UserId,
-                SelectedCategories = userCategoriesDto.SelectedCategories
+                SelectedCategories = userCategoriesDto.SelectedCategories,
+                NewTasks = newTasks
+
+
             });
         }
+
 
         [HttpGet("{userId}")]
         public async Task<ActionResult<IEnumerable<Category>>> GetUserCategories(int userId)
@@ -111,5 +123,13 @@ namespace WebApi.Controllers
 
             return Ok(tasks);
         }
+
+
+
+
+
+
+
+
     }
 }

@@ -17,9 +17,9 @@ public partial class User
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual ICollection<TaskComment> TaskComments { get; set; } = new List<TaskComment>();
+    public virtual ICollection<NewUserTask> NewUserTasks { get; set; } = new List<NewUserTask>();
 
-    public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
+    public virtual ICollection<TaskComment> TaskComments { get; set; } = new List<TaskComment>();
 
     public virtual ICollection<UserTask> UserTasks { get; set; } = new List<UserTask>();
 }

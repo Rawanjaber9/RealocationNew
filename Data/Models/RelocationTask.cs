@@ -15,5 +15,11 @@ public partial class RelocationTask
 
     public string? DescriptionTask { get; set; }
 
+    public int? DaysToComplete { get; set; }
+
+    public int? PriorityId { get; set; }
+
+    public virtual Priority? Priority { get; set; }
+
     public virtual ICollection<UserTask> UserTasks { get; set; } = new List<UserTask>();
 }

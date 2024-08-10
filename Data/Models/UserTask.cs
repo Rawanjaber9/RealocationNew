@@ -21,6 +21,20 @@ public partial class UserTask
 
     public DateTime CreatedAt { get; set; }
 
+    public DateTime? StartDate { get; set; }
+
+    public DateTime? EndDate { get; set; }
+
+    public int? Priority { get; set; }
+
+    public string? PersonalNote { get; set; }
+
+    public bool IsNewUserTask { get; set; }
+
+    public bool WantsNotification { get; set; }
+
+    public virtual Priority? PriorityNavigation { get; set; }
+
     public virtual RelocationTask? Task { get; set; }
 
     public virtual User User { get; set; } = null!;

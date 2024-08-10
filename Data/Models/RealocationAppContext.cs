@@ -19,11 +19,13 @@ public partial class RealocationAppContext : DbContext
 
     public virtual DbSet<Country> Countries { get; set; }
 
+    public virtual DbSet<NewUserTask> NewUserTasks { get; set; }
+
+    public virtual DbSet<Priority> Priorities { get; set; }
+
     public virtual DbSet<RelocationDetail> RelocationDetails { get; set; }
 
     public virtual DbSet<RelocationTask> RelocationTasks { get; set; }
-
-    public virtual DbSet<Task> Tasks { get; set; }
 
     public virtual DbSet<TaskComment> TaskComments { get; set; }
 
@@ -56,6 +58,35 @@ public partial class RealocationAppContext : DbContext
             entity.Property(e => e.CountryName).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<NewUserTask>(entity =>
+        {
+            entity.HasKey(e => e.TaskId).HasName("PK__Tasks__7C6949B15361C1BE");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.EndDate).HasColumnType("date");
+            entity.Property(e => e.PersonalNote).HasMaxLength(20);
+            entity.Property(e => e.StartDate).HasColumnType("date");
+            entity.Property(e => e.Title).HasMaxLength(100);
+
+            entity.HasOne(d => d.User).WithMany(p => p.NewUserTasks)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Tasks__UserId__34C8D9D1");
+        });
+
+        modelBuilder.Entity<Priority>(entity =>
+        {
+            entity.HasKey(e => e.PriorityId).HasName("PK__Priority__D0A3D0BE13D33958");
+
+            entity.ToTable("Priority");
+
+            entity.Property(e => e.PriorityId).ValueGeneratedNever();
+            entity.Property(e => e.PriorityName).HasMaxLength(50);
+        });
+
         modelBuilder.Entity<RelocationDetail>(entity =>
         {
             entity.HasKey(e => e.RelocationId).HasName("PK__Relocati__5047ADD90DAAE5CD");
@@ -72,26 +103,10 @@ public partial class RealocationAppContext : DbContext
             entity.HasKey(e => e.TaskId).HasName("PK__Relocati__7C6949B15D627C80");
 
             entity.Property(e => e.RecommendedTask).HasMaxLength(255);
-        });
 
-        modelBuilder.Entity<Task>(entity =>
-        {
-            entity.HasKey(e => e.TaskId).HasName("PK__Tasks__7C6949B15361C1BE");
-
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Description).HasMaxLength(255);
-            entity.Property(e => e.EndDate).HasColumnType("date");
-            entity.Property(e => e.Priority).HasMaxLength(20);
-            entity.Property(e => e.StartDate).HasColumnType("date");
-            entity.Property(e => e.Status).HasMaxLength(20);
-            entity.Property(e => e.Title).HasMaxLength(100);
-
-            entity.HasOne(d => d.User).WithMany(p => p.Tasks)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Tasks__UserId__34C8D9D1");
+            entity.HasOne(d => d.Priority).WithMany(p => p.RelocationTasks)
+                .HasForeignKey(d => d.PriorityId)
+                .HasConstraintName("FK_RelocationTasks_PriorityId");
         });
 
         modelBuilder.Entity<TaskComment>(entity =>
@@ -152,7 +167,14 @@ public partial class RealocationAppContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.EndDate).HasColumnType("date");
+            entity.Property(e => e.PersonalNote).HasMaxLength(255);
+            entity.Property(e => e.StartDate).HasColumnType("date");
             entity.Property(e => e.TaskName).HasMaxLength(255);
+
+            entity.HasOne(d => d.PriorityNavigation).WithMany(p => p.UserTasks)
+                .HasForeignKey(d => d.Priority)
+                .HasConstraintName("FK_UserTasks_Priority");
 
             entity.HasOne(d => d.Task).WithMany(p => p.UserTasks)
                 .HasForeignKey(d => d.TaskId)
