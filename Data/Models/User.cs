@@ -17,6 +17,8 @@ public partial class User
 
     public DateTime CreatedAt { get; set; }
 
+    public bool HasAcceptedTerms { get; set; }
+
     public virtual ICollection<NewUserTask> NewUserTasks { get; set; } = new List<NewUserTask>();
 
     public virtual ICollection<TaskComment> TaskComments { get; set; } = new List<TaskComment>();
