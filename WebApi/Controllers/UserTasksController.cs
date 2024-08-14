@@ -184,5 +184,39 @@ namespace WebApi.Controllers
             });
         }
 
+
+
+
+
+        [HttpGet("tasks/user/{userId}/final")]
+        public async Task<ActionResult<IEnumerable<object>>> GetFinalUserTasks(int userId)
+        {
+            var finalUserTasks = await db.UserTasks
+                .Where(ut => ut.UserId == userId && !ut.IsDeleted)
+                .Select(ut => new
+                {
+                    ut.UserTaskId,
+                    ut.TaskName,
+                    ut.TaskDescription,
+                    ut.IsRecommended,
+                    ut.CreatedAt,
+                    ut.StartDate,
+                    ut.EndDate,
+                    ut.Priority,
+                    ut.PersonalNote,
+                    ut.WantsNotification,
+                    ut.IsNewUserTask
+                })
+                .ToListAsync();
+
+            if (finalUserTasks == null || !finalUserTasks.Any())
+            {
+                return NotFound("No tasks found for this user.");
+            }
+
+            return Ok(finalUserTasks);
+        }
+
+
     }
 }
