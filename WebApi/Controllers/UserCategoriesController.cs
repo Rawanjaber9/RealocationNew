@@ -95,6 +95,10 @@ namespace WebApi.Controllers
             return Ok(categories);
         }
 
+
+
+
+        //פקודה שמחזירה את הקטגוריות שהמשתמש בחר יחד עם המשימות של כל קטגוריה
         [HttpGet("tasks/user/{userId}/{isBeforeMove}")]
         public async Task<ActionResult<IEnumerable<object>>> GetTasksByUserAndMoveStatus(int userId, bool isBeforeMove)
         {

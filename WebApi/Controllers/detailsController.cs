@@ -51,6 +51,10 @@ namespace WebApi.Controllers
             return CreatedAtAction(nameof(GetRelocationDetail), new { id = relocationDetail.RelocationId }, relocationDetail);
         }
 
+
+
+        //קריאה שמחזירה את מה שהמשתמש ענה בשלושת השאלות
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRelocationDetail(int id)
         {

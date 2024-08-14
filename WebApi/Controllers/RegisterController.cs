@@ -38,5 +38,48 @@ namespace WebApi.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+
+
+
+
+
+        //קריאה שמקלבת מספר משתמש ואישור התקנון ומעדכנת טבלה USERS 
+        //אחרי שלב ההרשמה
+        [HttpPut("accept-terms/{userId}")]
+        public async Task<IActionResult> AcceptTerms(int userId, [FromBody] bool hasAcceptedTerms)
+        {
+            var user = await db.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            user.HasAcceptedTerms = hasAcceptedTerms;
+            db.Entry(user).State = EntityState.Modified;
+
+            await db.SaveChangesAsync();
+
+            return Ok(new { message = "Terms accepted status updated successfully!", user.UserId, user.HasAcceptedTerms });
+        }
+
+
+
+
+
+        //פקודה המחזירה את פרטי המשתמש
+
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<User>> GetUserDetails(int userId)
+        {
+            var user = await db.Users.FindAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            return Ok(user);
+        }
     }
 }
