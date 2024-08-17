@@ -19,7 +19,11 @@ public partial class User
 
     public bool HasAcceptedTerms { get; set; }
 
+    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
     public virtual ICollection<NewUserTask> NewUserTasks { get; set; } = new List<NewUserTask>();
+
+    public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
 
     public virtual ICollection<TaskComment> TaskComments { get; set; } = new List<TaskComment>();
 

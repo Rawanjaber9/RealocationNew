@@ -28,10 +28,11 @@ namespace WebApi.Controllers
             try
             {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
-                user.CreatedAt = DateTime.UtcNow; // Ensure CreatedAt is set
+                user.CreatedAt = DateTime.UtcNow;
                 db.Users.Add(user);
                 await db.SaveChangesAsync();
-                return Ok(new { message = "Registration successful!", user });
+
+                return Ok(new { message = "Registration successful!", user.UserId });
             }
             catch (Exception ex)
             {
@@ -41,11 +42,6 @@ namespace WebApi.Controllers
 
 
 
-
-
-
-        //קריאה שמקלבת מספר משתמש ואישור התקנון ומעדכנת טבלה USERS 
-        //אחרי שלב ההרשמה
         [HttpPut("accept-terms/{userId}")]
         public async Task<IActionResult> AcceptTerms(int userId, [FromBody] bool hasAcceptedTerms)
         {
@@ -65,8 +61,6 @@ namespace WebApi.Controllers
 
 
 
-
-
         //פקודה המחזירה את פרטי המשתמש
 
         [HttpGet("{userId}")]
@@ -81,5 +75,6 @@ namespace WebApi.Controllers
 
             return Ok(user);
         }
+
     }
 }

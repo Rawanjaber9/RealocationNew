@@ -52,30 +52,64 @@ namespace WebApi.Controllers
 
 
 
+
+
+
         //הצגת המשימות המומלצות למשתמש על המסך
         [HttpGet("tasks/user/{userId}")]
         public async Task<ActionResult<IEnumerable<object>>> GetUserTasks(int userId)
         {
-            var userTasks = await db.UserTasks
-                .Where(ut => ut.UserId == userId && !ut.IsDeleted)
-                .Select(ut => new
+            // בדוק אם למשתמש יש ילדים
+            var hasChildren = await db.RelocationDetails
+                .Where(rd => rd.UserId == userId)
+                .Select(rd => rd.HasChildren)
+                .FirstOrDefaultAsync();
+
+            // מצא את הקטגוריות שהמשתמש בחר
+            var selectedCategories = await db.UserCategories
+                .Where(uc => uc.UserId == userId)
+                .Select(uc => uc.CategoryId)
+                .ToListAsync();
+
+            // שלוף את המשימות המומלצות מהקטגוריות שהמשתמש בחר
+            var recommendedTasks = await db.RelocationTasks
+                .Where(rt => selectedCategories.Contains(rt.CategoryId))
+                .Select(rt => new
                 {
-                    ut.UserTaskId,
-                    ut.TaskName,
-                    ut.TaskDescription,
-                    ut.IsRecommended,
-                    ut.IsDeleted,
-                    ut.CreatedAt
+                    TaskName = rt.RecommendedTask,
+                    TaskDescription = rt.DescriptionTask,
+                    IsRecommended = true,
+                    IsDeleted = false,
+                    CreatedAt = DateTime.Now
                 })
                 .ToListAsync();
 
-            if (userTasks == null || !userTasks.Any())
+            // אם למשתמש יש ילדים, שלוף גם את המשימות שמיועדות להורים
+            if (hasChildren)
+            {
+                var parentTasks = await db.RelocationTasks
+                    .Where(rt => rt.IsForParents)
+                    .Select(rt => new
+                    {
+                        TaskName = rt.RecommendedTask,
+                        TaskDescription = rt.DescriptionTask,
+                        IsRecommended = true,
+                        IsDeleted = false,
+                        CreatedAt = DateTime.Now
+                    })
+                    .ToListAsync();
+
+                recommendedTasks.AddRange(parentTasks);
+            }
+
+            if (!recommendedTasks.Any())
             {
                 return NotFound("No tasks found for this user.");
             }
 
-            return Ok(userTasks);
+            return Ok(recommendedTasks);
         }
+
 
 
 
@@ -107,6 +141,8 @@ namespace WebApi.Controllers
                 PersonalNote = userTask.PersonalNote
             });
         }
+
+
 
 
 
@@ -216,7 +252,5 @@ namespace WebApi.Controllers
 
             return Ok(finalUserTasks);
         }
-
-
     }
 }
