@@ -56,6 +56,7 @@ namespace WebApi.Controllers
 
 
         //הצגת המשימות המומלצות למשתמש על המסך
+
         [HttpGet("tasks/user/{userId}")]
         public async Task<ActionResult<IEnumerable<object>>> GetUserTasks(int userId)
         {
@@ -71,31 +72,37 @@ namespace WebApi.Controllers
                 .Select(uc => uc.CategoryId)
                 .ToListAsync();
 
-            // שלוף את המשימות המומלצות מהקטגוריות שהמשתמש בחר
+            // שלוף את כל פרטי המשימות המומלצות מהקטגוריות שהמשתמש בחר
             var recommendedTasks = await db.RelocationTasks
                 .Where(rt => selectedCategories.Contains(rt.CategoryId))
                 .Select(rt => new
                 {
-                    TaskName = rt.RecommendedTask,
-                    TaskDescription = rt.DescriptionTask,
-                    IsRecommended = true,
-                    IsDeleted = false,
-                    CreatedAt = DateTime.Now
+                    rt.TaskId,
+                    rt.CategoryId,
+                    rt.RecommendedTask,
+                    rt.DescriptionTask,
+                    rt.IsBeforeMove,
+                    rt.DaysToComplete,
+                    rt.PriorityId,
+                    rt.IsForParents
                 })
                 .ToListAsync();
 
-            // אם למשתמש יש ילדים, שלוף גם את המשימות שמיועדות להורים
+            // אם למשתמש יש ילדים, שלוף גם את כל פרטי המשימות שמיועדות להורים
             if (hasChildren)
             {
                 var parentTasks = await db.RelocationTasks
                     .Where(rt => rt.IsForParents)
                     .Select(rt => new
                     {
-                        TaskName = rt.RecommendedTask,
-                        TaskDescription = rt.DescriptionTask,
-                        IsRecommended = true,
-                        IsDeleted = false,
-                        CreatedAt = DateTime.Now
+                        rt.TaskId,
+                        rt.CategoryId,
+                        rt.RecommendedTask,
+                        rt.DescriptionTask,
+                        rt.IsBeforeMove,
+                        rt.DaysToComplete,
+                        rt.PriorityId,
+                        rt.IsForParents
                     })
                     .ToListAsync();
 
