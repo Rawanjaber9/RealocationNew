@@ -231,26 +231,33 @@ namespace WebApi.Controllers
 
 
         //קונטרולר שמחזיר את המשימות אחרי הסינון
+
         [HttpGet("tasks/user/{userId}/final")]
         public async Task<ActionResult<IEnumerable<object>>> GetFinalUserTasks(int userId)
         {
             var finalUserTasks = await db.UserTasks
                 .Where(ut => ut.UserId == userId && !ut.IsDeleted)
-                .Select(ut => new
-                {
-                    ut.UserTaskId,
-                    ut.TaskName,
-                    ut.TaskDescription,
-                    ut.IsRecommended,
-                    ut.CreatedAt,
-                    ut.StartDate,
-                    ut.EndDate,
-                    ut.Priority,
-                    ut.PersonalNote,
-                    ut.WantsNotification,
-                    ut.IsNewUserTask,
-                    ut.IsDeleted,
-                })
+                .Join(
+                    db.RelocationTasks,
+                    ut => ut.TaskId,
+                    rt => rt.TaskId,
+                    (ut, rt) => new
+                    {
+                        ut.UserTaskId,
+                        ut.TaskName,
+                        ut.TaskDescription,
+                        ut.IsRecommended,
+                        ut.CreatedAt,
+                        ut.StartDate,
+                        ut.EndDate,
+                        ut.Priority,
+                        ut.PersonalNote,
+                        ut.WantsNotification,
+                        ut.IsNewUserTask,
+                        ut.IsDeleted,
+                        rt.CategoryId // הוספת ה-CategoryId מהטבלה RelocationTasks
+                    }
+                )
                 .ToListAsync();
 
             if (finalUserTasks == null || !finalUserTasks.Any())
