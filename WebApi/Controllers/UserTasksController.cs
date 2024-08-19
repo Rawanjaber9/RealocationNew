@@ -248,7 +248,8 @@ namespace WebApi.Controllers
                     ut.Priority,
                     ut.PersonalNote,
                     ut.WantsNotification,
-                    ut.IsNewUserTask
+                    ut.IsNewUserTask,
+                    ut.IsDeleted,
                 })
                 .ToListAsync();
 
@@ -259,5 +260,67 @@ namespace WebApi.Controllers
 
             return Ok(finalUserTasks);
         }
+
+
+
+
+
+        //חישוב ימי ביצוע המשימה 
+        [HttpPost("calculate-tasks-dates/{userId}")]
+        public async Task<IActionResult> CalculateTasksDates(int userId)
+        {
+            // שלב 1: שליפת תאריך המעבר של המשתמש מטבלת RelocationDetail
+            var relocationDetail = await db.RelocationDetails
+                .Where(rd => rd.UserId == userId)
+                .FirstOrDefaultAsync();
+
+            if (relocationDetail == null)
+            {
+                return NotFound("Relocation details not found for the user.");
+            }
+
+            var moveDate = relocationDetail.MoveDate;
+
+            // שלב 2: שליפת כל המשימות עבור המשתמש מטבלת UserTasks
+            var userTasks = await db.UserTasks
+                .Where(ut => ut.UserId == userId)
+                .ToListAsync();
+
+            foreach (var userTask in userTasks)
+            {
+                // שלב 3: שליפת פרטי המשימה מטבלת RelocationTasks לפי TaskId
+                var relocationTask = await db.RelocationTasks
+                    .Where(rt => rt.TaskId == userTask.TaskId)
+                    .FirstOrDefaultAsync();
+
+                if (relocationTask == null)
+                {
+                    continue; // אם לא נמצאה משימה תמשיך למשימה הבאה
+                }
+
+                // שלב 4: חישוב תאריכי התחלה וסיום בהתאם לכמות הימים ולמצב המעבר
+                if (relocationTask.IsBeforeMove)
+                {
+                    // אם המשימה צריכה להתבצע אחרי תאריך המעבר
+                    userTask.StartDate = moveDate.AddDays(1); // התאריך הבא אחרי תאריך המעבר
+                    userTask.EndDate = userTask.StartDate.Value.AddDays((double)relocationTask.DaysToComplete);
+                }
+                else
+                {
+                    // אם המשימה צריכה להתבצע לפני תאריך המעבר
+                    userTask.EndDate = moveDate.AddDays(-1); // התאריך יום לפני המעבר
+                    userTask.StartDate = userTask.EndDate.Value.AddDays((double)-relocationTask.DaysToComplete);
+                }
+
+                // עדכון המשימה עם תאריכי ההתחלה והסיום המחושבים
+                db.Entry(userTask).State = EntityState.Modified;
+            }
+
+            // שלב 5: שמירת השינויים בבסיס הנתונים
+            await db.SaveChangesAsync();
+
+            return Ok(new { message = "Task dates calculated and updated successfully." });
+        }
+
     }
 }
