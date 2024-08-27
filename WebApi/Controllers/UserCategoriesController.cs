@@ -14,6 +14,14 @@ namespace WebApi.Controllers
     {
         private readonly RealocationAppContext db = new RealocationAppContext();
 
+
+
+
+
+
+        //קונטקולר ששומר למשתמש את הקטגוריות שהוא בוחר וגם את המשימות עבור כל קטגוריה
+        //ניגש לטבלת USERCATEGORIES ושומר שם אם הקטגוריות של אותו משתמש
+        //ואז ניגש לטבלת USERTASKS ושומר שם את המשימות עבור אותו משתמש לפי הקטגוירות שהוא בחר
         [HttpPost]
         public async Task<IActionResult> PostUserCategories([FromBody] UserCategoriesInputDTO userCategoriesDto)
         {
@@ -22,9 +30,7 @@ namespace WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-
             var newTasks = new List<object>();
-
 
             foreach (var categoryId in userCategoriesDto.SelectedCategories)
             {
@@ -58,11 +64,11 @@ namespace WebApi.Controllers
                         IsDeleted = false,
                         CreatedAt = DateTime.Now,
                         Priority = task.PriorityId,
+                        IsBeforeMove = task.IsBeforeMove,  // שמירת ערך IsBeforeMove
                         PersonalNote = ""
                     };
                     db.UserTasks.Add(userTask);
                     newTasks.Add(new { userTask.TaskId, userTask.TaskName });
-
                 }
             }
 
@@ -73,12 +79,18 @@ namespace WebApi.Controllers
                 UserId = userCategoriesDto.UserId,
                 SelectedCategories = userCategoriesDto.SelectedCategories,
                 NewTasks = newTasks
-
-
             });
         }
 
 
+
+
+
+
+
+
+        //קונטרולר שמביא את הקטגוריות שהמשתמש בחר 
+        //רק הקטגוריות ללא המשימות שלהן
         [HttpGet("{userId}")]
         public async Task<ActionResult<IEnumerable<Category>>> GetUserCategories(int userId)
         {
@@ -98,7 +110,14 @@ namespace WebApi.Controllers
 
 
 
+
+
+
+
         //פקודה שמחזירה את הקטגוריות שהמשתמש בחר יחד עם המשימות של כל קטגוריה
+        //לפי סינון של לפני המעבר או אחרי המעבר 
+        //הקריאה מקבלת מספר משתמש ואם מדובר במשימות לפני או אחרי המעבר ,משתנה בוליאני
+
         [HttpGet("tasks/user/{userId}/{isBeforeMove}")]
         public async Task<ActionResult<IEnumerable<object>>> GetTasksByUserAndMoveStatus(int userId, bool isBeforeMove)
         {
@@ -117,6 +136,7 @@ namespace WebApi.Controllers
                     rt.TaskId,
                     rt.RecommendedTask,
                     rt.DescriptionTask
+
                 })
                 .ToListAsync();
 

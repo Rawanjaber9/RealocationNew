@@ -14,7 +14,7 @@ namespace WebApi.Controllers
     {
         RealocationAppContext db = new RealocationAppContext();
 
-
+        //מחזיר את תשובות המשתמש על שלושת השאלות יחד עם הקטגוריות שבחר
         [HttpGet("{userId}")]
         public async Task<ActionResult> GetUserDetails(int userId)
         {

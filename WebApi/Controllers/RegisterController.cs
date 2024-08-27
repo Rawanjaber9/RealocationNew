@@ -11,7 +11,7 @@ namespace WebApi.Controllers
     {
         RealocationAppContext db = new RealocationAppContext();
 
-
+        //ביצוע הרשמת משתמש חדש
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register([FromBody] User user)
         {
@@ -42,6 +42,8 @@ namespace WebApi.Controllers
 
 
 
+
+        //אישור תקנון למשתמש ספציפי לפי מספר משתמש
         [HttpPut("accept-terms/{userId}")]
         public async Task<IActionResult> AcceptTerms(int userId, [FromBody] bool hasAcceptedTerms)
         {
@@ -61,7 +63,11 @@ namespace WebApi.Controllers
 
 
 
-        //פקודה המחזירה את פרטי המשתמש
+
+
+
+
+        // פקודה המחזירה את פרטי המשתמש אחרי ההרשמה
 
         [HttpGet("{userId}")]
         public async Task<ActionResult<User>> GetUserDetails(int userId)

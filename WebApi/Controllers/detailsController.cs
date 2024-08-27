@@ -1,6 +1,7 @@
 ﻿using Data.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApi.DTO;
 
 namespace WebApi.Controllers
@@ -12,6 +13,12 @@ namespace WebApi.Controllers
     {
         private readonly RealocationAppContext db = new RealocationAppContext();
 
+
+
+
+
+
+        //שמירת התשובות על שלושת השאלות
         [HttpPost]
         public async Task<IActionResult> PostRelocationDetail([FromBody] RelocationDetailDTO relocationDetailDto)
         {
@@ -48,24 +55,76 @@ namespace WebApi.Controllers
 
             await db.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetRelocationDetail), new { id = relocationDetail.RelocationId }, relocationDetail);
+            return CreatedAtAction(nameof(GetRelocationDetailByUserId), new { id = relocationDetail.RelocationId }, relocationDetail);
         }
+
+
+
+
+
+
+
+
+
+        //אפשר למשתמש לערוך את פרטי הרילוקיישין, התשובות של  שלושת השאלות
+        [HttpPut("update/{userId}")]
+        public async Task<IActionResult> UpdateRelocationDetail(int userId, [FromBody] RelocationDetail updatedDetail)
+        {
+            // מצא את הרשומה עבור המשתמש
+            var relocationDetail = await db.RelocationDetails
+                .FirstOrDefaultAsync(rd => rd.UserId == userId);
+
+            if (relocationDetail == null)
+            {
+                return NotFound("Relocation detail not found for this user.");
+            }
+
+            // עדכון פרטים
+            relocationDetail.DestinationCountry = updatedDetail.DestinationCountry;
+            relocationDetail.MoveDate = updatedDetail.MoveDate;
+            relocationDetail.HasChildren = updatedDetail.HasChildren;
+            relocationDetail.CreatedAt = DateTime.Now; // עדכון זמן העריכה
+
+            // שמירת השינויים
+            db.Entry(relocationDetail).State = EntityState.Modified;
+            await db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Relocation details updated successfully!",
+                relocationDetail
+            });
+
+
+
+        }
+
+
+
+
+
+
+
+
+
 
 
 
         //קריאה שמחזירה את מה שהמשתמש ענה בשלושת השאלות
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetRelocationDetail(int id)
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetRelocationDetailByUserId(int userId)
         {
-            var relocationDetail = await db.RelocationDetails.FindAsync(id);
+            var relocationDetail = await db.RelocationDetails
+                .Where(rd => rd.UserId == userId)
+                .FirstOrDefaultAsync();
 
             if (relocationDetail == null)
             {
-                return NotFound();
+                return NotFound("Relocation detail not found for this user.");
             }
 
             return Ok(relocationDetail);
         }
+
     }
 }

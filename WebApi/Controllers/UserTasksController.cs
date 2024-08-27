@@ -21,42 +21,8 @@ namespace WebApi.Controllers
 
 
 
-
-        //אפשר למשתמש למחוק משימה ספציפית
-
-        [HttpDelete("{userId}/task/{taskId}")]
-        public async Task<IActionResult> DeleteUserTask(int userId, int taskId)
-        {
-            var userTask = await db.UserTasks
-                .FirstOrDefaultAsync(ut => ut.UserId == userId && ut.TaskId == taskId && ut.IsRecommended && !ut.IsDeleted);
-
-            if (userTask == null)
-            {
-                return NotFound("Task not found or already deleted.");
-            }
-
-            userTask.IsDeleted = true;
-            db.Entry(userTask).State = EntityState.Modified;
-
-            await db.SaveChangesAsync();
-
-            return Ok(new
-            {
-                UserTaskId = userTask.UserTaskId,
-                IsDeleted = userTask.IsDeleted
-            });
-        }
-
-
-
-
-
-
-
-
-
-        //הצגת המשימות המומלצות למשתמש על המסך
-
+        //קונטרולר שמחזיר את פרטי המשימות עבור משתמש אחד ספציפי לפי מספר משתמש
+        //USERID
         [HttpGet("tasks/user/{userId}")]
         public async Task<ActionResult<IEnumerable<object>>> GetUserTasks(int userId)
         {
@@ -85,6 +51,7 @@ namespace WebApi.Controllers
                     rt.DaysToComplete,
                     rt.PriorityId,
                     rt.IsForParents
+
                 })
                 .ToListAsync();
 
@@ -123,11 +90,45 @@ namespace WebApi.Controllers
 
 
 
+        //אפשר למשתמש למחוק משימה ספציפית
+
+        [HttpDelete("{userId}/task/{taskId}")]
+        public async Task<IActionResult> DeleteUserTask(int userId, int taskId)
+        {
+            var userTask = await db.UserTasks
+                .FirstOrDefaultAsync(ut => ut.UserId == userId && ut.TaskId == taskId && ut.IsRecommended && !ut.IsDeleted);
+
+            if (userTask == null)
+            {
+                return NotFound("Task not found or already deleted.");
+            }
+
+            userTask.IsDeleted = true;
+            db.Entry(userTask).State = EntityState.Modified;
+
+            await db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                UserTaskId = userTask.UserTaskId,
+                IsDeleted = userTask.IsDeleted
+            });
+        }
 
 
-        //כדי לאפשר למשתמש לעדכן את ההערה האישית לכל משימה
 
 
+
+
+
+
+
+
+
+
+
+
+        //כדי לאפשר למשתמש לעדכן את ההערה האישית לכל משימה שהוא ירצה
         [HttpPut("tasks/{userTaskId}/personalNote")]
         public async Task<IActionResult> UpdatePersonalNoteForUserTask(int userTaskId, [FromBody] PersonalNoteDTO personalNoteDto)
         {
@@ -152,8 +153,9 @@ namespace WebApi.Controllers
 
 
 
-
         // פעולה להוספת משימה חדשה
+        //הקונטרולר בודק את התאריך שהמשתמש מכניס למשימה החדשה
+        //ולפי זה הוא מגדיר אם זה לפני המעבר או אחרי המעבר
         [HttpPost("tasks/new")]
         public async Task<IActionResult> AddNewUserTask([FromBody] NewUserTaskDTO newUserTaskDto)
         {
@@ -162,10 +164,28 @@ namespace WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
+            // שלב 1: שליפת תאריך המעבר של המשתמש מטבלת RelocationDetail
+            var relocationDetail = await db.RelocationDetails
+                .Where(rd => rd.UserId == newUserTaskDto.UserId)
+                .Select(rd => rd.MoveDate)
+                .FirstOrDefaultAsync();
+
+            if (relocationDetail == default(DateTime))
+            {
+                return NotFound("Relocation details not found for the user.");
+            }
+
+            // שלב 2: בדיקת תאריכי המשימה
+            bool isBeforeMove = false;
+            if (newUserTaskDto.EndDate.HasValue && newUserTaskDto.EndDate.Value > relocationDetail)
+            {
+                isBeforeMove = true;
+            }
+
+            // שלב 3: יצירת המשימה עם המידע שהתקבל
             var userTask = new UserTask
             {
                 UserId = newUserTaskDto.UserId,
-
                 TaskName = newUserTaskDto.TaskName,
                 TaskDescription = newUserTaskDto.TaskDescription,
                 IsRecommended = false, // השדה מוגדר כ-FALSE
@@ -175,6 +195,7 @@ namespace WebApi.Controllers
                 EndDate = newUserTaskDto.EndDate,
                 Priority = newUserTaskDto.PriorityId,
                 PersonalNote = newUserTaskDto.PersonalNote,
+                IsBeforeMove = isBeforeMove, // קביעת הערך לפי הבדיקה
                 IsNewUserTask = true // השדה מוגדר כ-TRUE
             };
 
@@ -195,7 +216,8 @@ namespace WebApi.Controllers
                 EndDate = userTask.EndDate,
                 PriorityId = userTask.Priority,
                 PersonalNote = userTask.PersonalNote,
-                IsNewUserTask = userTask.IsNewUserTask
+                IsNewUserTask = userTask.IsNewUserTask,
+                IsBeforeMove = userTask.IsBeforeMove // החזרת הערך הנכון ל-IsBeforeMove
             });
         }
 
@@ -204,7 +226,8 @@ namespace WebApi.Controllers
 
 
 
-        // הפעלת התראה עבור משימה ספציפית לפי מספר משתמש
+
+        // הפעלת התראה עבור משימה ספציפית לפי מספר משימה
 
         [HttpPut("tasks/{userTaskId}/notification")]
         public async Task<IActionResult> UpdateTaskNotification(int userTaskId, [FromBody] UpdateNotificationDTO updateNotificationDto)
@@ -212,6 +235,7 @@ namespace WebApi.Controllers
             var userTask = await db.UserTasks.FindAsync(userTaskId);
             if (userTask == null)
             {
+
                 return NotFound("Task not found.");
             }
 
@@ -230,13 +254,17 @@ namespace WebApi.Controllers
 
 
 
-        //קונטרולר שמחזיר את המשימות אחרי הסינון
 
+        
+        
+        //קונטרולר שמחזיר את המשימות אחרי הסינון
+        //מחזיר את כל הפרטים של כל משימה
         [HttpGet("tasks/user/{userId}/final")]
         public async Task<ActionResult<IEnumerable<object>>> GetFinalUserTasks(int userId)
         {
-            var finalUserTasks = await db.UserTasks
-                .Where(ut => ut.UserId == userId && !ut.IsDeleted)
+            // שליפת המשימות של המשתמש שהן משימות מומלצות (מה שיש בטבלת RelocationTasks)
+            var recommendedTasks = await db.UserTasks
+                .Where(ut => ut.UserId == userId && !ut.IsDeleted && !ut.IsNewUserTask)
                 .Join(
                     db.RelocationTasks,
                     ut => ut.TaskId,
@@ -255,12 +283,38 @@ namespace WebApi.Controllers
                         ut.WantsNotification,
                         ut.IsNewUserTask,
                         ut.IsDeleted,
-                        rt.CategoryId // הוספת ה-CategoryId מהטבלה RelocationTasks
+                        ut.IsBeforeMove,
+                        CategoryId = (int?)rt.CategoryId // המרה ל-Nullable כדי לתאם עם המשימות המותאמות אישית
                     }
                 )
                 .ToListAsync();
 
-            if (finalUserTasks == null || !finalUserTasks.Any())
+            // שליפת המשימות שהמשתמש הוסיף לעצמו
+            var customTasks = await db.UserTasks
+                .Where(ut => ut.UserId == userId && !ut.IsDeleted && ut.IsNewUserTask)
+                .Select(ut => new
+                {
+                    ut.UserTaskId,
+                    ut.TaskName,
+                    ut.TaskDescription,
+                    ut.IsRecommended,
+                    ut.CreatedAt,
+                    ut.StartDate,
+                    ut.EndDate,
+                    ut.Priority,
+                    ut.PersonalNote,
+                    ut.WantsNotification,
+                    ut.IsNewUserTask,
+                    ut.IsDeleted,
+                    ut.IsBeforeMove,
+                    CategoryId = (int?)null // המרה ל-Nullable עבור משימות חדשות שאין להן קטגוריה
+                })
+                .ToListAsync();
+
+            // איחוד כל המשימות (גם המומלצות וגם המותאמות אישית)
+            var finalUserTasks = recommendedTasks.Concat(customTasks).ToList();
+
+            if (!finalUserTasks.Any())
             {
                 return NotFound("No tasks found for this user.");
             }
@@ -272,7 +326,11 @@ namespace WebApi.Controllers
 
 
 
-        //חישוב ימי ביצוע המשימה 
+
+
+
+        //חישוב זמן לביצוע המשימות לפי ואחרי המעבר לפי מספר הימים המוצב להם
+        //ברגע שמפעילים את הקונטרולר הזה עבור מספר משתמש מסוים החישוב מתבצע באופן אוטומטי לכל המשימות שלו
         [HttpPost("calculate-tasks-dates/{userId}")]
         public async Task<IActionResult> CalculateTasksDates(int userId)
         {

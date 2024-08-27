@@ -33,6 +33,8 @@ public partial class UserTask
 
     public bool WantsNotification { get; set; }
 
+    public bool IsBeforeMove { get; set; }
+
     public virtual Priority? PriorityNavigation { get; set; }
 
     public virtual RelocationTask? Task { get; set; }
