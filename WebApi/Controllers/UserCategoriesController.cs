@@ -22,6 +22,8 @@ namespace WebApi.Controllers
         //קונטקולר ששומר למשתמש את הקטגוריות שהוא בוחר וגם את המשימות עבור כל קטגוריה
         //ניגש לטבלת USERCATEGORIES ושומר שם אם הקטגוריות של אותו משתמש
         //ואז ניגש לטבלת USERTASKS ושומר שם את המשימות עבור אותו משתמש לפי הקטגוירות שהוא בחר
+        
+
         [HttpPost]
         public async Task<IActionResult> PostUserCategories([FromBody] UserCategoriesInputDTO userCategoriesDto)
         {
@@ -34,13 +36,21 @@ namespace WebApi.Controllers
 
             foreach (var categoryId in userCategoriesDto.SelectedCategories)
             {
-                var userCategory = new UserCategory
+                // בדיקה אם הקטגוריה כבר קיימת עבור המשתמש
+                var existingCategory = await db.UserCategories
+                    .Where(uc => uc.UserId == userCategoriesDto.UserId && uc.CategoryId == categoryId)
+                    .FirstOrDefaultAsync();
+
+                if (existingCategory == null)
                 {
-                    UserId = userCategoriesDto.UserId,
-                    CategoryId = categoryId,
-                    CreatedAt = DateTime.Now
-                };
-                db.UserCategories.Add(userCategory);
+                    var userCategory = new UserCategory
+                    {
+                        UserId = userCategoriesDto.UserId,
+                        CategoryId = categoryId,
+                        CreatedAt = DateTime.Now
+                    };
+                    db.UserCategories.Add(userCategory);
+                }
             }
 
             await db.SaveChangesAsync();
@@ -64,7 +74,7 @@ namespace WebApi.Controllers
                         IsDeleted = false,
                         CreatedAt = DateTime.Now,
                         Priority = task.PriorityId,
-                        IsBeforeMove = task.IsBeforeMove,  // שמירת ערך IsBeforeMove
+                        IsBeforeMove = task.IsBeforeMove,
                         PersonalNote = ""
                     };
                     db.UserTasks.Add(userTask);
@@ -81,6 +91,7 @@ namespace WebApi.Controllers
                 NewTasks = newTasks
             });
         }
+
 
 
 
