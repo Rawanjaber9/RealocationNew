@@ -24,73 +24,73 @@ namespace WebApi.Controllers
         //ואז ניגש לטבלת USERTASKS ושומר שם את המשימות עבור אותו משתמש לפי הקטגוירות שהוא בחר
         
 
-        [HttpPost]
-        public async Task<IActionResult> PostUserCategories([FromBody] UserCategoriesInputDTO userCategoriesDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpPost]
+        //public async Task<IActionResult> PostUserCategories([FromBody] UserCategoriesInputDTO userCategoriesDto)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            var newTasks = new List<object>();
+        //    var newTasks = new List<object>();
 
-            foreach (var categoryId in userCategoriesDto.SelectedCategories)
-            {
-                // בדיקה אם הקטגוריה כבר קיימת עבור המשתמש
-                var existingCategory = await db.UserCategories
-                    .Where(uc => uc.UserId == userCategoriesDto.UserId && uc.CategoryId == categoryId)
-                    .FirstOrDefaultAsync();
+        //    foreach (var categoryId in userCategoriesDto.SelectedCategories)
+        //    {
+        //        // בדיקה אם הקטגוריה כבר קיימת עבור המשתמש
+        //        var existingCategory = await db.UserCategories
+        //            .Where(uc => uc.UserId == userCategoriesDto.UserId && uc.CategoryId == categoryId)
+        //            .FirstOrDefaultAsync();
 
-                if (existingCategory == null)
-                {
-                    var userCategory = new UserCategory
-                    {
-                        UserId = userCategoriesDto.UserId,
-                        CategoryId = categoryId,
-                        CreatedAt = DateTime.Now
-                    };
-                    db.UserCategories.Add(userCategory);
-                }
-            }
+        //        if (existingCategory == null)
+        //        {
+        //            var userCategory = new UserCategory
+        //            {
+        //                UserId = userCategoriesDto.UserId,
+        //                CategoryId = categoryId,
+        //                CreatedAt = DateTime.Now
+        //            };
+        //            db.UserCategories.Add(userCategory);
+        //        }
+        //    }
 
-            await db.SaveChangesAsync();
+        //    await db.SaveChangesAsync();
 
-            // הוספת המשימות המומלצות למשתמש לטבלת UserTasks
-            foreach (var categoryId in userCategoriesDto.SelectedCategories)
-            {
-                var recommendedTasks = await db.RelocationTasks
-                    .Where(rt => rt.CategoryId == categoryId)
-                    .ToListAsync();
+        //    // הוספת המשימות המומלצות למשתמש לטבלת UserTasks
+        //    foreach (var categoryId in userCategoriesDto.SelectedCategories)
+        //    {
+        //        var recommendedTasks = await db.RelocationTasks
+        //            .Where(rt => rt.CategoryId == categoryId)
+        //            .ToListAsync();
 
-                foreach (var task in recommendedTasks)
-                {
-                    var userTask = new UserTask
-                    {
-                        UserId = userCategoriesDto.UserId,
-                        TaskId = task.TaskId,
-                        TaskName = task.RecommendedTask,
-                        TaskDescription = task.DescriptionTask,
-                        IsRecommended = true,
-                        IsDeleted = false,
-                        CreatedAt = DateTime.Now,
-                        Priority = task.PriorityId,
-                        IsBeforeMove = task.IsBeforeMove,
-                        PersonalNote = ""
-                    };
-                    db.UserTasks.Add(userTask);
-                    newTasks.Add(new { userTask.TaskId, userTask.TaskName });
-                }
-            }
+        //        foreach (var task in recommendedTasks)
+        //        {
+        //            var userTask = new UserTask
+        //            {
+        //                UserId = userCategoriesDto.UserId,
+        //                TaskId = task.TaskId,
+        //                TaskName = task.RecommendedTask,
+        //                TaskDescription = task.DescriptionTask,
+        //                IsRecommended = true,
+        //                IsDeleted = false,
+        //                CreatedAt = DateTime.Now,
+        //                Priority = task.PriorityId,
+        //                IsBeforeMove = task.IsBeforeMove,
+        //                PersonalNote = ""
+        //            };
+        //            db.UserTasks.Add(userTask);
+        //            newTasks.Add(new { userTask.TaskId, userTask.TaskName });
+        //        }
+        //    }
 
-            await db.SaveChangesAsync();
+        //    await db.SaveChangesAsync();
 
-            return Ok(new
-            {
-                UserId = userCategoriesDto.UserId,
-                SelectedCategories = userCategoriesDto.SelectedCategories,
-                NewTasks = newTasks
-            });
-        }
+        //    return Ok(new
+        //    {
+        //        UserId = userCategoriesDto.UserId,
+        //        SelectedCategories = userCategoriesDto.SelectedCategories,
+        //        NewTasks = newTasks
+        //    });
+        //}
 
 
 
