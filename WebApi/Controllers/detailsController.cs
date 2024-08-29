@@ -67,19 +67,153 @@ namespace WebApi.Controllers
 
 
         //אפשר למשתמש לערוך את פרטי הרילוקיישין, התשובות של  שלושת השאלות
+        //[HttpPost]
+        //public async Task<IActionResult> PostRelocationDetailsAndUserCategories([FromBody] CombinedInputDTO combinedInputDto)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+
+        //    שמירת פרטי הרילוקיישן
+        //   var relocationDetail = new RelocationDetail
+        //   {
+        //       UserId = combinedInputDto.UserId,
+        //       DestinationCountry = combinedInputDto.DestinationCountry,
+        //       MoveDate = combinedInputDto.MoveDate,
+        //       HasChildren = combinedInputDto.HasChildren,
+        //       CreatedAt = DateTime.Now
+        //   };
+
+        //    db.RelocationDetails.Add(relocationDetail);
+        //    await db.SaveChangesAsync();
+
+        //    שמירת קטגוריות המשתמש
+        //   var newTasks = new List<object>();
+
+        //    foreach (var categoryId in combinedInputDto.SelectedCategories)
+        //    {
+        //        בדיקה אם הקטגוריה כבר קיימת עבור המשתמש
+        //       var existingCategory = await db.UserCategories
+        //           .Where(uc => uc.UserId == combinedInputDto.UserId && uc.CategoryId == categoryId)
+        //           .FirstOrDefaultAsync();
+
+        //        if (existingCategory == null)
+        //        {
+        //            var userCategory = new UserCategory
+        //            {
+        //                UserId = combinedInputDto.UserId,
+        //                CategoryId = categoryId,
+        //                CreatedAt = DateTime.Now
+        //            };
+        //            db.UserCategories.Add(userCategory);
+        //        }
+        //    }
+
+        //    await db.SaveChangesAsync();
+
+        //    הוספת המשימות המומלצות למשתמש לטבלת UserTasks
+        //    foreach (var categoryId in combinedInputDto.SelectedCategories)
+        //    {
+        //        var recommendedTasks = await db.RelocationTasks
+        //            .Where(rt => rt.CategoryId == categoryId)
+        //            .ToListAsync();
+
+        //        foreach (var task in recommendedTasks)
+        //        {
+        //            var userTask = new UserTask
+        //            {
+        //                UserId = combinedInputDto.UserId,
+        //                TaskId = task.TaskId,
+        //                TaskName = task.RecommendedTask,
+        //                TaskDescription = task.DescriptionTask,
+        //                IsRecommended = true,
+        //                IsDeleted = false,
+        //                CreatedAt = DateTime.Now,
+        //                Priority = task.PriorityId,
+        //                IsBeforeMove = task.IsBeforeMove,
+        //                PersonalNote = ""
+        //            };
+        //            db.UserTasks.Add(userTask);
+        //            newTasks.Add(new { userTask.TaskId, userTask.TaskName });
+        //        }
+        //    }
+
+        //    await db.SaveChangesAsync();
+
+        //    return Ok(new
+        //    {
+        //        UserId = combinedInputDto.UserId,
+        //        SelectedCategories = combinedInputDto.SelectedCategories,
+        //        NewTasks = newTasks
+        //    });
+        //}
 
 
 
 
-        [HttpPost]
-        public async Task<IActionResult> PostRelocationDetailsAndUserCategories([FromBody] CombinedInputDTO combinedInputDto)
+
+
+
+
+
+
+
+        [HttpPut("update/{userId}")]
+        public async Task<IActionResult> UpdateRelocationDetail(int userId, [FromBody] RelocationDetail updatedDetail)
+        {
+            // מצא את הרשומה עבור המשתמש
+            var relocationDetail = await db.RelocationDetails
+                .FirstOrDefaultAsync(rd => rd.UserId == userId);
+
+            if (relocationDetail == null)
+            {
+                return NotFound("Relocation detail not found for this user.");
+            }
+
+            // עדכון פרטים
+            relocationDetail.DestinationCountry = updatedDetail.DestinationCountry;
+            relocationDetail.MoveDate = updatedDetail.MoveDate;
+            relocationDetail.HasChildren = updatedDetail.HasChildren;
+            relocationDetail.CreatedAt = DateTime.Now; // עדכון זמן העריכה
+
+            // שמירת השינויים
+            db.Entry(relocationDetail).State = EntityState.Modified;
+            await db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Relocation details updated successfully!",
+                relocationDetail
+            });
+
+
+
+        }
+
+
+
+
+
+
+
+
+              // הקונטרולר הזה מקבל את ה-UserId ב-URL ואת שאר הנתונים ב-Body של ה-POST request.
+              //  בשלב הראשון, הוא שומר את פרטי הרילוקיישן של המשתמש.
+             //   לאחר מכן, הוא שומר את הקטגוריות שנבחרו ואת המשימות המומלצות המתאימות.
+            //    בסיום, הוא מבצע את חישוב תאריכי ההתחלה והסיום לכל משימה לפי תאריך המעבר ומצב המשימה (לפני או אחרי המעבר).
+           //לבסוף, הוא מחזיר תשובה ל   -Client עם המידע החדש שנשמר והמשימות המעודכנות.
+
+
+              [HttpPost("save-details-and-calculate/{userId}")]
+        public async Task<IActionResult> PostRelocationDetailsAndCalculateTaskDates(int userId, [FromBody] CombinedInputDTO combinedInputDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            // שמירת פרטי הרילוקיישן
+            // שלב 1: שמירת פרטי הרילוקיישן
             var relocationDetail = new RelocationDetail
             {
                 UserId = combinedInputDto.UserId,
@@ -92,7 +226,7 @@ namespace WebApi.Controllers
             db.RelocationDetails.Add(relocationDetail);
             await db.SaveChangesAsync();
 
-            // שמירת קטגוריות המשתמש
+            // שלב 2: שמירת קטגוריות המשתמש והמשימות
             var newTasks = new List<object>();
 
             foreach (var categoryId in combinedInputDto.SelectedCategories)
@@ -145,65 +279,48 @@ namespace WebApi.Controllers
 
             await db.SaveChangesAsync();
 
-            return Ok(new
+            // שלב 3: חישוב תאריכי המשימות
+            var moveDate = relocationDetail.MoveDate;
+
+            var userTasks = await db.UserTasks
+                .Where(ut => ut.UserId == userId)
+                .ToListAsync();
+
+            foreach (var userTask in userTasks)
             {
-                UserId = combinedInputDto.UserId,
-                SelectedCategories = combinedInputDto.SelectedCategories,
-                NewTasks = newTasks
-            });
-        }
+                var relocationTask = await db.RelocationTasks
+                    .Where(rt => rt.TaskId == userTask.TaskId)
+                    .FirstOrDefaultAsync();
 
+                if (relocationTask == null)
+                {
+                    continue;
+                }
 
+                if (relocationTask.IsBeforeMove)
+                {
+                    userTask.StartDate = moveDate.AddDays(1);
+                    userTask.EndDate = userTask.StartDate.Value.AddDays((double)relocationTask.DaysToComplete);
+                }
+                else
+                {
+                    userTask.EndDate = moveDate.AddDays(-1);
+                    userTask.StartDate = userTask.EndDate.Value.AddDays((double)-relocationTask.DaysToComplete);
+                }
 
-
-
-
-
-
-
-
-
-
-
-
-        [HttpPut("update/{userId}")]
-        public async Task<IActionResult> UpdateRelocationDetail(int userId, [FromBody] RelocationDetail updatedDetail)
-        {
-            // מצא את הרשומה עבור המשתמש
-            var relocationDetail = await db.RelocationDetails
-                .FirstOrDefaultAsync(rd => rd.UserId == userId);
-
-            if (relocationDetail == null)
-            {
-                return NotFound("Relocation detail not found for this user.");
+                db.Entry(userTask).State = EntityState.Modified;
             }
 
-            // עדכון פרטים
-            relocationDetail.DestinationCountry = updatedDetail.DestinationCountry;
-            relocationDetail.MoveDate = updatedDetail.MoveDate;
-            relocationDetail.HasChildren = updatedDetail.HasChildren;
-            relocationDetail.CreatedAt = DateTime.Now; // עדכון זמן העריכה
-
-            // שמירת השינויים
-            db.Entry(relocationDetail).State = EntityState.Modified;
             await db.SaveChangesAsync();
 
             return Ok(new
             {
-                message = "Relocation details updated successfully!",
-                relocationDetail
+                UserId = combinedInputDto.UserId,
+                SelectedCategories = combinedInputDto.SelectedCategories,
+                NewTasks = newTasks,
+                message = "Details saved and task dates calculated and updated successfully."
             });
-
-
-
         }
-
-
-
-
-
-
-
 
 
 
