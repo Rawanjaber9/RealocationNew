@@ -35,6 +35,8 @@ public partial class UserTask
 
     public bool IsBeforeMove { get; set; }
 
+    public int? CategoryId { get; set; }
+
     public virtual Priority? PriorityNavigation { get; set; }
 
     public virtual RelocationTask? Task { get; set; }
