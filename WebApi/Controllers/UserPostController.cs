@@ -133,5 +133,100 @@ namespace WebApi.Controllers
             return Ok(post);
         }
 
+
+
+
+
+
+
+
+        //מביא את כל הפוסטין יחד עם התגגובות שנכתבו עליהם
+        //לפי מספר משתמש
+
+        [HttpGet("user-posts/{userId}")]
+        public async Task<IActionResult> GetUserPostsWithComments(int userId)
+        {
+            // שליפת כל הפוסטים שהמשתמש העלה
+            var userPosts = await db.Posts
+                .Where(p => p.UserId == userId)
+                .Select(p => new
+                {
+                    p.Username,
+                    p.Content,
+                    p.CreatedAt,
+                    Comments = db.Comments
+                                .Where(c => c.PostId == p.PostId)
+                                .Select(c => new
+                                {
+                                    c.Username,
+                                    c.Content,
+                                    c.CreatedAt
+                                })
+                                .ToList()
+                })
+                .ToListAsync();
+
+            if (userPosts == null || !userPosts.Any())
+            {
+                return NotFound("No posts found for this user.");
+            }
+
+            return Ok(userPosts);
+        }
+
+
+
+
+        //מביא את כל הפוסטין יחד עם התגגובות שנכתבו עליהם
+        //לפי שם מדינה
+        [HttpGet("posts-by-destination/{destinationCountry}")]
+        public async Task<IActionResult> GetPostsByDestination(string destinationCountry)
+        {
+            // שלב 1: מציאת כל המשתמשים שבחרו באותה מדינת יעד
+            var usersInDestination = await db.RelocationDetails
+                .Where(rd => rd.DestinationCountry == destinationCountry)
+                .Select(rd => rd.UserId)
+                .ToListAsync();
+
+            if (!usersInDestination.Any())
+            {
+                return NotFound("No users found for the specified destination country.");
+            }
+
+            // שלב 2: שליפת כל הפוסטים שהעלו המשתמשים האלה
+            var posts = await db.Posts
+                .Where(p => usersInDestination.Contains(p.UserId))
+                .Select(p => new
+                {
+                    p.PostId,
+                    p.Username,
+                    p.Content,
+                    p.CreatedAt,
+                    p.UpdatedAt,
+                    Comments = db.Comments
+                        .Where(c => c.PostId == p.PostId)
+                        .Select(c => new
+                        {
+                            c.CommentId,
+                            c.Username,
+                            c.Content,
+                            c.CreatedAt
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            if (!posts.Any())
+            {
+                return NotFound("No posts found for the specified destination country.");
+            }
+
+            return Ok(posts);
+        }
+
+
+
+
+
     }
 }

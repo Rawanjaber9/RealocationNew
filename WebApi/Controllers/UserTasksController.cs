@@ -225,7 +225,6 @@ namespace WebApi.Controllers
 
 
 
-
         // הפעלת התראה עבור משימה ספציפית לפי מספר משימה
 
         [HttpPut("tasks/{userTaskId}/notification")]
@@ -254,10 +253,11 @@ namespace WebApi.Controllers
 
 
 
-        
-        
+
+
         //קונטרולר שמחזיר את המשימות אחרי הסינון
         //מחזיר את כל הפרטים של כל משימה
+
         [HttpGet("tasks/user/{userId}/final")]
         public async Task<ActionResult<IEnumerable<object>>> GetFinalUserTasks(int userId)
         {
@@ -306,7 +306,7 @@ namespace WebApi.Controllers
                     ut.IsNewUserTask,
                     ut.IsDeleted,
                     ut.IsBeforeMove,
-                    CategoryId = (int?)null // המרה ל-Nullable עבור משימות חדשות שאין להן קטגוריה
+                    ut.CategoryId // המרה ל-Nullable עבור משימות חדשות שאין להן קטגוריה
                 })
                 .ToListAsync();
 
@@ -320,10 +320,6 @@ namespace WebApi.Controllers
 
             return Ok(finalUserTasks);
         }
-
-
-
-
 
 
 

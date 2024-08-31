@@ -41,7 +41,7 @@ public partial class RealocationAppContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=DESKTOP-N2Q4FF9\\SQLEXPRESS;Database=RealocationApp;Trusted_Connection=True;Encrypt=false");
+        => optionsBuilder.UseSqlServer("Server=media.ruppin.ac.il;Database=bgroup30_test2;User Id=bgroup30;Password=bgroup30_01105;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
