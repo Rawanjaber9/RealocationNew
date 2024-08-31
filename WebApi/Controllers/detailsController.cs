@@ -156,39 +156,65 @@ namespace WebApi.Controllers
 
 
 
-
-
-
-        [HttpPut("update/{userId}")]
-        public async Task<IActionResult> UpdateRelocationDetail(int userId, [FromBody] RelocationDetail updatedDetail)
+        //מאפשר למשתמש לערוך את המענה על שלושת השאלות
+        //או לבחור קטגוריות אחרות
+        [HttpPut("update-relocation-details-and-categories/{userId}")]
+        public async Task<IActionResult> UpdateRelocationDetailsAndCategories(int userId, [FromBody] RelocationDetailDTO updatedDetail)
         {
             // מצא את הרשומה עבור המשתמש
-            var relocationDetail = await db.RelocationDetails
-                .FirstOrDefaultAsync(rd => rd.UserId == userId);
+            var relocationDetail = await db.RelocationDetails.FirstOrDefaultAsync(rd => rd.UserId == userId);
 
             if (relocationDetail == null)
             {
                 return NotFound("Relocation detail not found for this user.");
             }
 
-            // עדכון פרטים
-            relocationDetail.DestinationCountry = updatedDetail.DestinationCountry;
-            relocationDetail.MoveDate = updatedDetail.MoveDate;
-            relocationDetail.HasChildren = updatedDetail.HasChildren;
+            // עדכון רק אם השדה נשלח בבקשה
+            if (!string.IsNullOrEmpty(updatedDetail.DestinationCountry))
+            {
+                relocationDetail.DestinationCountry = updatedDetail.DestinationCountry;
+            }
+
+            if (updatedDetail.MoveDate.HasValue)
+            {
+                relocationDetail.MoveDate = updatedDetail.MoveDate.Value;
+            }
+
+            if (updatedDetail.HasChildren.HasValue)
+            {
+                relocationDetail.HasChildren = updatedDetail.HasChildren.Value;
+            }
+
             relocationDetail.CreatedAt = DateTime.Now; // עדכון זמן העריכה
 
-            // שמירת השינויים
             db.Entry(relocationDetail).State = EntityState.Modified;
             await db.SaveChangesAsync();
 
+            // עדכון קטגוריות המשתמש אם הן נשלחו בבקשה
+            if (updatedDetail.SelectedCategories != null && updatedDetail.SelectedCategories.Any())
+            {
+                var existingCategories = await db.UserCategories.Where(uc => uc.UserId == userId).ToListAsync();
+                db.UserCategories.RemoveRange(existingCategories);
+
+                foreach (var categoryId in updatedDetail.SelectedCategories)
+                {
+                    var userCategory = new UserCategory
+                    {
+                        UserId = userId,
+                        CategoryId = categoryId,
+                        CreatedAt = DateTime.Now
+                    };
+                    db.UserCategories.Add(userCategory);
+                }
+
+                await db.SaveChangesAsync();
+            }
+
             return Ok(new
             {
-                message = "Relocation details updated successfully!",
+                message = "Relocation details and categories updated successfully!",
                 relocationDetail
             });
-
-
-
         }
 
 
@@ -197,15 +223,14 @@ namespace WebApi.Controllers
 
 
 
+        // הקונטרולר הזה מקבל את ה-UserId ב-URL ואת שאר הנתונים ב-Body של ה-POST request.
+        //  בשלב הראשון, הוא שומר את פרטי הרילוקיישן של המשתמש.
+        //   לאחר מכן, הוא שומר את הקטגוריות שנבחרו ואת המשימות המומלצות המתאימות.
+        //    בסיום, הוא מבצע את חישוב תאריכי ההתחלה והסיום לכל משימה לפי תאריך המעבר ומצב המשימה (לפני או אחרי המעבר).
+        //לבסוף, הוא מחזיר תשובה ל   -Client עם המידע החדש שנשמר והמשימות המעודכנות.
 
-              // הקונטרולר הזה מקבל את ה-UserId ב-URL ואת שאר הנתונים ב-Body של ה-POST request.
-              //  בשלב הראשון, הוא שומר את פרטי הרילוקיישן של המשתמש.
-             //   לאחר מכן, הוא שומר את הקטגוריות שנבחרו ואת המשימות המומלצות המתאימות.
-            //    בסיום, הוא מבצע את חישוב תאריכי ההתחלה והסיום לכל משימה לפי תאריך המעבר ומצב המשימה (לפני או אחרי המעבר).
-           //לבסוף, הוא מחזיר תשובה ל   -Client עם המידע החדש שנשמר והמשימות המעודכנות.
 
-
-              [HttpPost("save-details-and-calculate/{userId}")]
+        [HttpPost("save-details-and-calculate/{userId}")]
         public async Task<IActionResult> PostRelocationDetailsAndCalculateTaskDates(int userId, [FromBody] CombinedInputDTO combinedInputDto)
         {
             if (!ModelState.IsValid)
