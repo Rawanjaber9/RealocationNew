@@ -165,6 +165,47 @@ namespace WebApi.Controllers
 
 
 
+        //קונטרולר המאפשר למשתמש לבחור קטגוריות אחרות ומחליף את זה בדאטה
+        [HttpPut("update-user-categories/{userId}")]
+        public async Task<IActionResult> UpdateUserCategories(int userId, [FromBody] List<int> newCategoryIds)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // שלב 1: מחיקת כל הקטגוריות הקיימות של המשתמש
+            var existingCategories = await db.UserCategories
+                .Where(uc => uc.UserId == userId)
+                .ToListAsync();
+
+            db.UserCategories.RemoveRange(existingCategories);
+            await db.SaveChangesAsync();
+
+            // שלב 2: הוספת הקטגוריות החדשות
+            foreach (var categoryId in newCategoryIds)
+            {
+                var userCategory = new UserCategory
+                {
+                    UserId = userId,
+                    CategoryId = categoryId,
+                    CreatedAt = DateTime.Now
+                };
+                db.UserCategories.Add(userCategory);
+            }
+
+            await db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                UserId = userId,
+                UpdatedCategories = newCategoryIds,
+                message = "User categories updated successfully."
+            });
+        }
+
+
+
 
     }
 }

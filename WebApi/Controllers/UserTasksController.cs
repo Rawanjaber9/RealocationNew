@@ -92,11 +92,11 @@ namespace WebApi.Controllers
 
         //אפשר למשתמש למחוק משימה ספציפית
 
-        [HttpDelete("{userId}/task/{taskId}")]
-        public async Task<IActionResult> DeleteUserTask(int userId, int taskId)
+        [HttpDelete("{userId}/usertask/{userTaskId}")]
+        public async Task<IActionResult> DeleteUserTask(int userId, int userTaskId)
         {
             var userTask = await db.UserTasks
-                .FirstOrDefaultAsync(ut => ut.UserId == userId && ut.TaskId == taskId && ut.IsRecommended && !ut.IsDeleted);
+                .FirstOrDefaultAsync(ut => ut.UserId == userId && ut.UserTaskId == userTaskId && ut.IsRecommended && !ut.IsDeleted);
 
             if (userTask == null)
             {
@@ -114,6 +114,10 @@ namespace WebApi.Controllers
                 IsDeleted = userTask.IsDeleted
             });
         }
+
+
+
+
 
 
 
@@ -156,6 +160,7 @@ namespace WebApi.Controllers
         // פעולה להוספת משימה חדשה
         //הקונטרולר בודק את התאריך שהמשתמש מכניס למשימה החדשה
         //ולפי זה הוא מגדיר אם זה לפני המעבר או אחרי המעבר
+
         [HttpPost("tasks/new")]
         public async Task<IActionResult> AddNewUserTask([FromBody] NewUserTaskDTO newUserTaskDto)
         {
@@ -164,39 +169,35 @@ namespace WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            // שלב 1: שליפת תאריך המעבר של המשתמש מטבלת RelocationDetail
-            var relocationDetail = await db.RelocationDetails
-                .Where(rd => rd.UserId == newUserTaskDto.UserId)
-                .Select(rd => rd.MoveDate)
-                .FirstOrDefaultAsync();
-
-            if (relocationDetail == default(DateTime))
+            // שלב 1: בדיקת הקטגוריה שבחר המשתמש
+            var categoryExists = await db.Categories.AnyAsync(c => c.CategoryId == newUserTaskDto.CategoryId);
+            if (!categoryExists)
             {
-                return NotFound("Relocation details not found for the user.");
+                return NotFound("Category not found.");
             }
 
-            // שלב 2: בדיקת תאריכי המשימה
-            bool isBeforeMove = false;
-            if (newUserTaskDto.EndDate.HasValue && newUserTaskDto.EndDate.Value > relocationDetail)
-            {
-                isBeforeMove = true;
-            }
+            // שלב 2: מציאת TaskId הגבוה ביותר והוספת 1
+            var maxTaskId = await db.UserTasks.MaxAsync(ut => (int?)ut.TaskId) ?? 0;
+            var newTaskId = maxTaskId + 1; // הקצאת TaskId חדש
 
-            // שלב 3: יצירת המשימה עם המידע שהתקבל
+
+            // שלב 3: יצירת משימה חדשה והוספתה למערכת
             var userTask = new UserTask
             {
                 UserId = newUserTaskDto.UserId,
+                TaskId = newTaskId,
                 TaskName = newUserTaskDto.TaskName,
                 TaskDescription = newUserTaskDto.TaskDescription,
                 IsRecommended = false, // השדה מוגדר כ-FALSE
                 IsDeleted = false, // השדה מוגדר כ-FALSE
+                IsNewUserTask = true,
                 CreatedAt = DateTime.Now,
                 StartDate = newUserTaskDto.StartDate,
                 EndDate = newUserTaskDto.EndDate,
                 Priority = newUserTaskDto.PriorityId,
                 PersonalNote = newUserTaskDto.PersonalNote,
-                IsBeforeMove = isBeforeMove, // קביעת הערך לפי הבדיקה
-                IsNewUserTask = true // השדה מוגדר כ-TRUE
+                IsBeforeMove = newUserTaskDto.IsBeforeMove,
+                CategoryId = newUserTaskDto.CategoryId // השדה המגדיר את הקטגוריה
             };
 
             db.UserTasks.Add(userTask);
@@ -205,7 +206,7 @@ namespace WebApi.Controllers
             return Ok(new
             {
                 UserTaskId = userTask.UserTaskId,
-                TaskId = 0,
+                TaskId = userTask.TaskId,
                 UserId = userTask.UserId,
                 TaskName = userTask.TaskName,
                 TaskDescription = userTask.TaskDescription,
@@ -216,12 +217,10 @@ namespace WebApi.Controllers
                 EndDate = userTask.EndDate,
                 PriorityId = userTask.Priority,
                 PersonalNote = userTask.PersonalNote,
-                IsNewUserTask = userTask.IsNewUserTask,
-                IsBeforeMove = userTask.IsBeforeMove // החזרת הערך הנכון ל-IsBeforeMove
+                IsBeforeMove = userTask.IsBeforeMove,
+                CategoryId = userTask.CategoryId // השדה המגדיר את הקטגוריה
             });
         }
-
-
 
 
 
