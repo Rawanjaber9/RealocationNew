@@ -89,7 +89,8 @@ namespace WebApi.Controllers
             {
                 message = "Comment added successfully!",
                 Username = username,
-                Content = comment.Content
+                Content = comment.Content,
+                postId
             });
         }
 
