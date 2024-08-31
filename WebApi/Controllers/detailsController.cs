@@ -158,64 +158,6 @@ namespace WebApi.Controllers
 
         //מאפשר למשתמש לערוך את המענה על שלושת השאלות
         //או לבחור קטגוריות אחרות
-        [HttpPut("update-relocation-details-and-categories/{userId}")]
-        public async Task<IActionResult> UpdateRelocationDetailsAndCategories(int userId, [FromBody] RelocationDetailDTO updatedDetail)
-        {
-            // מצא את הרשומה עבור המשתמש
-            var relocationDetail = await db.RelocationDetails.FirstOrDefaultAsync(rd => rd.UserId == userId);
-
-            if (relocationDetail == null)
-            {
-                return NotFound("Relocation detail not found for this user.");
-            }
-
-            // עדכון רק אם השדה נשלח בבקשה
-            if (!string.IsNullOrEmpty(updatedDetail.DestinationCountry))
-            {
-                relocationDetail.DestinationCountry = updatedDetail.DestinationCountry;
-            }
-
-            if (updatedDetail.MoveDate.HasValue)
-            {
-                relocationDetail.MoveDate = updatedDetail.MoveDate.Value;
-            }
-
-            if (updatedDetail.HasChildren.HasValue)
-            {
-                relocationDetail.HasChildren = updatedDetail.HasChildren.Value;
-            }
-
-            relocationDetail.CreatedAt = DateTime.Now; // עדכון זמן העריכה
-
-            db.Entry(relocationDetail).State = EntityState.Modified;
-            await db.SaveChangesAsync();
-
-            // עדכון קטגוריות המשתמש אם הן נשלחו בבקשה
-            if (updatedDetail.SelectedCategories != null && updatedDetail.SelectedCategories.Any())
-            {
-                var existingCategories = await db.UserCategories.Where(uc => uc.UserId == userId).ToListAsync();
-                db.UserCategories.RemoveRange(existingCategories);
-
-                foreach (var categoryId in updatedDetail.SelectedCategories)
-                {
-                    var userCategory = new UserCategory
-                    {
-                        UserId = userId,
-                        CategoryId = categoryId,
-                        CreatedAt = DateTime.Now
-                    };
-                    db.UserCategories.Add(userCategory);
-                }
-
-                await db.SaveChangesAsync();
-            }
-
-            return Ok(new
-            {
-                message = "Relocation details and categories updated successfully!",
-                relocationDetail
-            });
-        }
 
 
 
@@ -228,7 +170,6 @@ namespace WebApi.Controllers
         //   לאחר מכן, הוא שומר את הקטגוריות שנבחרו ואת המשימות המומלצות המתאימות.
         //    בסיום, הוא מבצע את חישוב תאריכי ההתחלה והסיום לכל משימה לפי תאריך המעבר ומצב המשימה (לפני או אחרי המעבר).
         //לבסוף, הוא מחזיר תשובה ל   -Client עם המידע החדש שנשמר והמשימות המעודכנות.
-
 
         [HttpPost("save-details-and-calculate/{userId}")]
         public async Task<IActionResult> PostRelocationDetailsAndCalculateTaskDates(int userId, [FromBody] CombinedInputDTO combinedInputDto)
@@ -295,7 +236,8 @@ namespace WebApi.Controllers
                         CreatedAt = DateTime.Now,
                         Priority = task.PriorityId,
                         IsBeforeMove = task.IsBeforeMove,
-                        PersonalNote = ""
+                        PersonalNote = "",
+                        CategoryId = task.CategoryId // כאן מוסיפים את ה-CATEGORYID למשימה
                     };
                     db.UserTasks.Add(userTask);
                     newTasks.Add(new { userTask.TaskId, userTask.TaskName });
@@ -324,13 +266,15 @@ namespace WebApi.Controllers
 
                 if (relocationTask.IsBeforeMove)
                 {
-                    userTask.StartDate = moveDate.AddDays(1);
-                    userTask.EndDate = userTask.StartDate.Value.AddDays((double)relocationTask.DaysToComplete);
+                    // משימות שצריך לבצע לפני המעבר
+                    userTask.EndDate = moveDate.AddDays(-1);
+                    userTask.StartDate = userTask.EndDate.Value.AddDays((double)-relocationTask.DaysToComplete);
                 }
                 else
                 {
-                    userTask.EndDate = moveDate.AddDays(-1);
-                    userTask.StartDate = userTask.EndDate.Value.AddDays((double)-relocationTask.DaysToComplete);
+                    // משימות שצריך לבצע אחרי המעבר
+                    userTask.StartDate = moveDate.AddDays(1);
+                    userTask.EndDate = userTask.StartDate.Value.AddDays((double)relocationTask.DaysToComplete);
                 }
 
                 db.Entry(userTask).State = EntityState.Modified;
@@ -347,6 +291,120 @@ namespace WebApi.Controllers
             });
         }
 
+
+
+
+
+
+
+
+
+        [HttpPut("update-relocation-details-and-categories/{userId}")]
+        public async Task<IActionResult> UpdateRelocationDetailsAndCategories(int userId, [FromBody] RelocationDetailDTO updatedDetail)
+        {
+            // מחיקת כל הרשומות בטבלת RelocationDetails עבור המשתמש
+            var existingRelocationDetails = await db.RelocationDetails.Where(rd => rd.UserId == userId).ToListAsync();
+            db.RelocationDetails.RemoveRange(existingRelocationDetails);
+            await db.SaveChangesAsync();
+
+            // יצירת רשומה חדשה עם הפרטים המעודכנים
+            var relocationDetail = new RelocationDetail
+            {
+                UserId = userId,
+                DestinationCountry = updatedDetail.DestinationCountry,
+                MoveDate = updatedDetail.MoveDate.HasValue ? updatedDetail.MoveDate.Value : DateTime.Now,
+                HasChildren = updatedDetail.HasChildren.HasValue ? updatedDetail.HasChildren.Value : false,
+                CreatedAt = DateTime.Now
+            };
+
+            db.RelocationDetails.Add(relocationDetail);
+            await db.SaveChangesAsync();
+
+            // מחיקת כל הקטגוריות והמשימות הקיימות של המשתמש
+            var existingCategories = await db.UserCategories.Where(uc => uc.UserId == userId).ToListAsync();
+            db.UserCategories.RemoveRange(existingCategories);
+
+            var existingTasks = await db.UserTasks.Where(ut => ut.UserId == userId).ToListAsync();
+            db.UserTasks.RemoveRange(existingTasks);
+
+            await db.SaveChangesAsync();
+
+            // הוספת הקטגוריות החדשות והמשימות המתאימות לקטגוריות שנבחרו
+            if (updatedDetail.SelectedCategories != null && updatedDetail.SelectedCategories.Any())
+            {
+                foreach (var categoryId in updatedDetail.SelectedCategories)
+                {
+                    // הוספת הקטגוריה לטבלת UserCategories
+                    var userCategory = new UserCategory
+                    {
+                        UserId = userId,
+                        CategoryId = categoryId,
+                        CreatedAt = DateTime.Now
+                    };
+                    db.UserCategories.Add(userCategory);
+
+                    // הוספת המשימות המתאימות לקטגוריה זו לטבלת UserTasks
+                    var recommendedTasks = await db.RelocationTasks
+                        .Where(rt => rt.CategoryId == categoryId)
+                        .ToListAsync();
+
+                    foreach (var task in recommendedTasks)
+                    {
+                        DateTime? startDate = null;
+                        DateTime? endDate = null;
+
+                        // חישוב תאריכי התחלה וסיום לפי תאריך הטיסה והאם המשימה מתבצעת לפני או אחרי המעבר
+                        if (task.IsBeforeMove)
+                        {
+                            startDate = relocationDetail.MoveDate.AddDays((double)-task.DaysToComplete);
+                            endDate = relocationDetail.MoveDate.AddDays(-1);
+                        }
+                        else
+                        {
+                            startDate = relocationDetail.MoveDate.AddDays(1);
+                            endDate = relocationDetail.MoveDate.AddDays((double)task.DaysToComplete);
+                        }
+
+                        var userTask = new UserTask
+                        {
+                            UserId = userId,
+                            TaskId = task.TaskId,
+                            TaskName = task.RecommendedTask,
+                            TaskDescription = task.DescriptionTask,
+                            IsRecommended = true,
+                            IsDeleted = false,
+                            CreatedAt = DateTime.Now,
+                            StartDate = startDate,
+                            EndDate = endDate,
+                            Priority = task.PriorityId,
+                            IsBeforeMove = task.IsBeforeMove,
+                            PersonalNote = "",
+                            CategoryId = task.CategoryId
+                        };
+                        db.UserTasks.Add(userTask);
+                    }
+                }
+
+                await db.SaveChangesAsync();
+            }
+
+            // שליפת הקטגוריות המעודכנות של המשתמש
+            var updatedCategories = await db.UserCategories
+                .Where(uc => uc.UserId == userId)
+                .Select(uc => new
+                {
+                    uc.CategoryId,
+                    uc.Category.CategoryName
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                message = "Relocation details, categories, and tasks updated successfully!",
+                relocationDetail,
+                updatedCategories
+            });
+        }
 
 
 
