@@ -151,6 +151,7 @@ namespace WebApi.Controllers
                 .Where(p => p.UserId == userId)
                 .Select(p => new
                 {
+                    p.PostId,
                     p.Username,
                     p.Content,
                     p.CreatedAt,
