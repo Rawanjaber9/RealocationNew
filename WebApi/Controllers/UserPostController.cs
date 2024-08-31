@@ -94,5 +94,44 @@ namespace WebApi.Controllers
         }
 
 
+
+
+
+
+        //קונטרולר שמביא את תוכן של פוסט מסוים יחד עם שם המשתמש שכתב את הפוסט
+        //ואת התגובות שהופיעו על אותו פוסט יחד שם שמות המשתמשים
+        [HttpGet("get-post-details/{postId}")]
+        public async Task<IActionResult> GetPostDetails(int postId)
+        {
+            // שליפת הפרטים של הפוסט
+            var post = await db.Posts
+                .Where(p => p.PostId == postId)
+                .Select(p => new
+                {
+                    p.PostId,
+                    p.Username,
+                    p.Content,
+                    p.CreatedAt,
+                    Comments = db.Comments
+                        .Where(c => c.PostId == p.PostId)
+                        .Select(c => new
+                        {
+                            c.CommentId,
+                            c.Username,
+                            c.Content,
+                            c.CreatedAt
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            if (post == null)
+            {
+                return NotFound("Post not found");
+            }
+
+            return Ok(post);
+        }
+
     }
 }

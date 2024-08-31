@@ -19,10 +19,6 @@ public partial class User
 
     public bool HasAcceptedTerms { get; set; }
 
-    public string? PasswordResetToken { get; set; }
-
-    public DateTime? PasswordResetTokenExpiration { get; set; }
-
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual ICollection<NewUserTask> NewUserTasks { get; set; } = new List<NewUserTask>();

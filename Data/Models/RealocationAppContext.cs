@@ -180,8 +180,6 @@ public partial class RealocationAppContext : DbContext
             entity.Property(e => e.Email).HasMaxLength(100);
             entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
-            entity.Property(e => e.PasswordResetToken).HasMaxLength(255);
-            entity.Property(e => e.PasswordResetTokenExpiration).HasColumnType("datetime");
             entity.Property(e => e.Username).HasMaxLength(50);
         });
 
