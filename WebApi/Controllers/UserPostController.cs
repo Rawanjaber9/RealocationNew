@@ -141,6 +141,9 @@ namespace WebApi.Controllers
 
 
 
+
+
+
         //מביא את כל הפוסטין יחד עם התגגובות שנכתבו עליהם
         //לפי מספר משתמש
 
@@ -156,13 +159,21 @@ namespace WebApi.Controllers
                     p.Username,
                     p.Content,
                     p.CreatedAt,
+                    UserProfilePicture = db.UserProfilePictures
+                                            .Where(up => up.UserId == p.UserId)
+                                            .Select(up => up.ProfilePicture)
+                                            .FirstOrDefault(), // תמונת הפרופיל של מי שכתב את הפוסט
                     Comments = db.Comments
                                 .Where(c => c.PostId == p.PostId)
                                 .Select(c => new
                                 {
                                     c.Username,
                                     c.Content,
-                                    c.CreatedAt
+                                    c.CreatedAt,
+                                    CommentUserProfilePicture = db.UserProfilePictures
+                                                                  .Where(up => up.UserId == c.UserId)
+                                                                  .Select(up => up.ProfilePicture)
+                                                                  .FirstOrDefault() // תמונת הפרופיל של מי שכתב את התגובה
                                 })
                                 .ToList()
                 })
@@ -179,8 +190,15 @@ namespace WebApi.Controllers
 
 
 
-        //מביא את כל הפוסטין יחד עם התגגובות שנכתבו עליהם
+
+
+
+
+
+
+        //מביא את כל הפוסטים יחד עם התגובות שנכתבו עליהם
         //לפי שם מדינה
+        //עם תמונות
         [HttpGet("posts-by-destination/{destinationCountry}")]
         public async Task<IActionResult> GetPostsByDestination(string destinationCountry)
         {
@@ -205,6 +223,10 @@ namespace WebApi.Controllers
                     p.Content,
                     p.CreatedAt,
                     p.UpdatedAt,
+                    UserProfilePicture = db.UserProfilePictures
+                        .Where(up => up.UserId == p.UserId)
+                        .Select(up => up.ProfilePicture)
+                        .FirstOrDefault(),
                     Comments = db.Comments
                         .Where(c => c.PostId == p.PostId)
                         .Select(c => new
@@ -212,7 +234,11 @@ namespace WebApi.Controllers
                             c.CommentId,
                             c.Username,
                             c.Content,
-                            c.CreatedAt
+                            c.CreatedAt,
+                            CommentUserProfilePicture = db.UserProfilePictures
+                                .Where(up => up.UserId == c.UserId)
+                                .Select(up => up.ProfilePicture)
+                                .FirstOrDefault()
                         })
                         .ToList()
                 })
@@ -225,6 +251,7 @@ namespace WebApi.Controllers
 
             return Ok(posts);
         }
+
 
 
 
