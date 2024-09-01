@@ -47,7 +47,7 @@ namespace WebApi.Controllers
 
 
 
-        [HttpGet("  ")]
+        [HttpGet("get-profile-picture/{userId}")]
         public async Task<IActionResult> GetProfilePicture(int userId)
         {
             var userProfilePicture = await db.UserProfilePictures
