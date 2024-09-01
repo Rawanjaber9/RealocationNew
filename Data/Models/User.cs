@@ -27,5 +27,7 @@ public partial class User
 
     public virtual ICollection<TaskComment> TaskComments { get; set; } = new List<TaskComment>();
 
+    public virtual ICollection<UserProfilePicture> UserProfilePictures { get; set; } = new List<UserProfilePicture>();
+
     public virtual ICollection<UserTask> UserTasks { get; set; } = new List<UserTask>();
 }

@@ -36,6 +36,7 @@ public partial class RealocationAppContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserCategory> UserCategories { get; set; }
+    public virtual DbSet<UserProfilePicture> UserProfilePictures { get; set; }
 
     public virtual DbSet<UserTask> UserTasks { get; set; }
 

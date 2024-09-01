@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "yyaU5zUgkgQ6Ilm8BQiohd7P1YKZr4ROs4vuwsQag3f8QyYCaEU1LF06RnatMAgnqLOFzuJXYwGhZdxZVmqAaw==",
+  "dgSpecHash": "wygBzw8846iWEIcV+hnqB1WmfUadMTvxqupmW4EXs5fQJgUSv2KBtvQUMhdVa/wlaGm6/tmqQZwSBsVOyYlWLQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\RealocationNew\\Client\\Client.csproj",
+  "projectFilePath": "C:\\Users\\HP\\OneDrive\\שולחן העבודה\\Mojito Designs\\RealocationNew\\Client\\Client.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\HP\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\HP\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",
