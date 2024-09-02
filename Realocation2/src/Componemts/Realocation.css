@@ -1,0 +1,163 @@
+  body {
+    background-color: #F4F7FB;
+    max-width: 393px;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+  }
+
+  .login-container {
+    max-width: 393px;
+    max-height: 852px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .signup-container {
+    max-width: 393px;
+    max-height: 852px;
+    overflow: hidden;
+    margin-bottom: 0;
+  }
+
+  .OQ-container {
+    max-width: 393px;
+    max-height: 852px;
+    overflow: hidden;
+  }
+
+  .taskboard-container {
+    max-width: 393px;
+    width: 100%;
+    overflow-x: hidden;
+    margin: 0 auto;
+    padding-bottom: 56px;
+    position: relative;
+  }
+
+  .chip-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    align-items: center;
+    white-space: nowrap;
+    justify-content: flex-end;
+  }
+
+  .edit-container {
+    max-width: 393px;
+    overflow: hidden;
+  }
+
+  h4 {
+    font-weight: 300;
+    font-size: 24px;
+  }
+
+  .card-image {
+    width: 45px;
+    height: 45px;
+    margin-bottom: 8px;
+    margin-top: 8px;
+  }
+
+  .card-label {
+    font-size: 12px;
+    width: 45px;
+  }
+
+  .task-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 16px;
+    background-color: #F5F7FA;
+    border: 1px solid #E7EFFA;
+    border-radius: 8px;
+    width: 90%;
+    margin-bottom: 8px;
+  }
+
+  .task-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin: 0 12px;
+  }
+
+  .task-date {
+    font-size: 24px;
+    color: #1170F4;
+    margin-bottom: 16px;
+    font-weight: 300;
+  }
+
+  .task-label {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+    color: #1170F4;
+    text-align: right;
+  }
+
+  .task-description {
+    font-size: 12px;
+    font-weight: 400;
+    color: #1170F4;
+    text-align: right;
+    margin: 0;
+  }
+
+  .task-button {
+    margin-left: 24px;
+    color: #1170F4;
+  }
+
+  .taskrec {
+    background-color: white;
+    border-radius: 16px;
+    margin: 16px 0;
+    padding: 16px;
+    width: 310px;
+  }
+
+  .signup-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    min-height: 90vh;
+  }
+
+  .signup-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .stepIndicator {
+    display: flex;
+    justify-content: space-between;
+    width: 144px;
+    margin: 0 auto;
+  }
+
+  .dot {
+    height: 16px;
+    width: 16px;
+    border: 1px solid #0C8CE9;
+    border-radius: 50%;
+  }
+
+  .dot.active {
+    background-color: #5db2f0;
+  }
+  .MyPostTab{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
